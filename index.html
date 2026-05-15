@@ -78,6 +78,9 @@
             <button id="talkButton" type="button">Диалог / цитатник</button>
             <button id="syntaxButton" type="button">Синтаксическая дуэль</button>
             <button id="campButton" type="button">Лагерь Ярика</button>
+            <button id="questBoardButton" type="button">Доска сайд-квестов</button>
+            <button id="codexButton" type="button">Кодекс мира</button>
+            <button id="soundButton" type="button">Саундтрек: выкл</button>
             <button id="newGamePlusButton" type="button" hidden>Бесконечная шиза NG+</button>
           </div>
 
@@ -97,12 +100,16 @@
             <li><kbd>WASD</kbd> / <kbd>стрелки</kbd> — движение по слою.</li>
             <li><kbd>1</kbd> код-атака, <kbd>2</kbd> дебафф, <kbd>3</kbd> артефакт в бою.</li>
             <li><kbd>T</kbd> диалог, <kbd>Y</kbd> синтаксис, <kbd>C</kbd> лагерь.</li>
+            <li><kbd>Q</kbd> сайд-квесты, <kbd>B</kbd> кодекс, <kbd>M</kbd> саундтрек.</li>
             <li>🌀 Разрыв кода переносит в следующий слой после босса и целей акта.</li>
           </ul>
 
           <h2>Акт и цели</h2>
           <div id="actCard" class="act-card"></div>
           <div id="objectiveList" class="objective-list"></div>
+
+          <h2>Сайд-квесты слоя</h2>
+          <div id="sideQuestList" class="side-quest-list"></div>
 
           <h2>Отряд</h2>
           <div id="partyList" class="pill-list"></div>
@@ -137,6 +144,23 @@
         <h2 id="dialogTitle">Диалог</h2>
         <p id="dialogText"></p>
         <div id="dialogChoices" class="choice-grid"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="questDialog" class="quest-dialog">
+      <form method="dialog">
+        <h2>Доска сайд-квестов</h2>
+        <p>Сайд-квесты дают ресурсы для длинной кампании: ключи, опыт, доверие и редкие артефакты.</p>
+        <div id="questDialogList" class="quest-dialog-list"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="codexDialog" class="codex-dialog">
+      <form method="dialog">
+        <h2>Кодекс Deep Dream</h2>
+        <div id="codexList" class="codex-list"></div>
         <button value="close" class="ghost-button">Закрыть</button>
       </form>
     </dialog>

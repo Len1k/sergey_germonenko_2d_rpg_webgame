@@ -438,3 +438,58 @@ dialog::backdrop { background: rgba(1, 4, 10, 0.72); }
   .battle-actions,
   .ending-grid { grid-template-columns: 1fr; }
 }
+
+.side-quest-list,
+.quest-dialog-list,
+.codex-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.side-quest,
+.quest-card,
+.codex-entry {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 10px 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.side-quest.done,
+.quest-card.done {
+  color: var(--accent);
+  border-color: rgba(119, 255, 192, 0.32);
+}
+
+.quest-card {
+  display: grid;
+  gap: 8px;
+}
+
+.quest-card strong,
+.codex-entry h3 {
+  color: var(--text);
+}
+
+.quest-card span,
+.codex-entry p {
+  margin: 0;
+}
+
+.quest-card button {
+  justify-self: start;
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: #06150f;
+  background: linear-gradient(135deg, var(--accent), var(--warning));
+  font-weight: 900;
+}
+
+.quest-card button:disabled {
+  cursor: default;
+  filter: grayscale(0.7);
+  opacity: 0.7;
+}

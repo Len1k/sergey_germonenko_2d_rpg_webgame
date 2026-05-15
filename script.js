@@ -19,11 +19,15 @@ const branchPanel = document.querySelector('#branchPanel');
 const actCard = document.querySelector('#actCard');
 const objectiveList = document.querySelector('#objectiveList');
 const logList = document.querySelector('#logList');
+const sideQuestList = document.querySelector('#sideQuestList');
 const partyList = document.querySelector('#partyList');
 const inventoryList = document.querySelector('#inventoryList');
 const achievementList = document.querySelector('#achievementList');
 const craftButton = document.querySelector('#craftButton');
 const newGameButton = document.querySelector('#newGameButton');
+const questBoardButton = document.querySelector('#questBoardButton');
+const codexButton = document.querySelector('#codexButton');
+const soundButton = document.querySelector('#soundButton');
 const newGamePlusButton = document.querySelector('#newGamePlusButton');
 const talkButton = document.querySelector('#talkButton');
 const syntaxButton = document.querySelector('#syntaxButton');
@@ -39,6 +43,10 @@ const dialogDialog = document.querySelector('#dialogDialog');
 const dialogTitle = document.querySelector('#dialogTitle');
 const dialogText = document.querySelector('#dialogText');
 const dialogChoices = document.querySelector('#dialogChoices');
+const questDialog = document.querySelector('#questDialog');
+const questDialogList = document.querySelector('#questDialogList');
+const codexDialog = document.querySelector('#codexDialog');
+const codexList = document.querySelector('#codexList');
 const campDialog = document.querySelector('#campDialog');
 const campInput = document.querySelector('#campInput');
 const campSendButton = document.querySelector('#campSendButton');
@@ -112,6 +120,33 @@ const enemies = {
 
 const resourceNames = { C: 'Битые пиксели', R: 'Бульон дебаггера', A: 'Танковый ключ' };
 const branchTitles = { none: 'Не выбрана', python: 'Python свобода', cpp: 'C++ порядок', tank: 'Задубение' };
+
+const sideQuestCatalog = [
+  { id: 'office_chat', layer: 0, title: 'Найти код 0 6 0 0 в чате', need: { item: 'Битые пиксели', count: 1 }, reward: { xp: 18, coins: 8, artifact: 'Лог 0 6 0 0' } },
+  { id: 'python_tower', layer: 1, title: 'Перепрошить S.O.S.I.-вышку', need: { item: 'Бульон дебаггера', count: 1 }, reward: { xp: 26, coins: 12, trust: 'FEDIL' } },
+  { id: 'gachi_cloak', layer: 2, title: 'Собрать гачи-материалы для плаща', need: { item: 'Танковый ключ', count: 1 }, reward: { xp: 30, coins: 14, artifact: 'Гачи-нашивка' } },
+  { id: 'crypto_ramen', layer: 3, title: 'Сварить доширак для FEDIL', need: { item: 'Священный доширак', count: 1 }, reward: { xp: 40, coins: 18, trust: 'FEDIL' } },
+  { id: 'hangar_patch', layer: 4, title: 'Переписать world_overhaul.sh', need: { item: 'Танковый ключ', count: 2 }, reward: { xp: 55, coins: 25, artifact: 'Патч против Задубения' } },
+];
+
+const codexEntries = [
+  { title: 'S.O.S.I.-строки', text: 'Протокол меметического управления. В игре выражен шкалой S.O.S.I.: при 100% симуляция проиграна.' },
+  { title: 'FEDIL', text: 'Python-гуру и источник ветки свободы. Высокое доверие открывает мягкие финалы и цитатник.' },
+  { title: 'Гермоненко', text: 'C++-архитектор компиляции реальности. Его ветка даёт HP и сильный порядок, но ускоряет тревогу.' },
+  { title: 'Глеб Танкист', text: 'Инженер Задубения. Танковые ключи нужны для ангарной ветки и world_overhaul.sh.' },
+  { title: 'Священный доширак', text: 'Главный сейв-ритуал и боевой артефакт: лечит, усиливает атаку и нужен в Крипто-Стадионе.' },
+  { title: 'New Game+', text: 'После любой концовки открывается слой «Бесконечная шиза» с усиленным стартом и случайным мем-архонтом.' },
+];
+
+const soundtrack = [
+  { layer: 0, name: 'Office BSOD — 56k dark ambient' },
+  { layer: 1, name: 'Cyber City — pip install love chillstep' },
+  { layer: 2, name: 'Gachi Verse — 8-bit gym remix' },
+  { layer: 3, name: 'Crypto Stadium — melancholy synthwave' },
+  { layer: 4, name: 'Frozen Hangar — tank industrial' },
+  { layer: 5, name: 'Endless Shiza — procedural modem noise' },
+];
+
 const achievements = [
   { id: 'first_blood', title: 'Первый глитч', description: 'Победить первого врага.' },
   { id: 'fedil_free', title: 'Крылья PyTorch', description: 'Освободить FEDIL на Python-ветке.' },
@@ -149,6 +184,7 @@ function createInitialState(isNewGamePlus = false) {
     ramenCrafted: 0,
     endings: [],
     newGamePlus: isNewGamePlus,
+    soundEnabled: false,
     finished: false,
     party: ['Ярик'],
     trust: { FEDIL: 0, 'Сергей Гермоненко': 0, 'Глеб Танкист': 0, Ярик: 2 },
@@ -156,6 +192,7 @@ function createInitialState(isNewGamePlus = false) {
     inventory: { 'Битые пиксели': 0, 'Бульон дебаггера': 0, 'Специи Гачи': 0, 'Танковый ключ': 0, 'Священный доширак': 0, 'Флешка с новеллой Глеба': 0, 'Кожаный плащ непобедимости': 0, 'Крылья PyTorch': 0 },
     artifacts: [],
     achievements: [],
+    completedSideQuests: [],
     entities: createLayerEntities(layerIndex),
   };
 }
@@ -227,6 +264,8 @@ function updateHud() {
   layerName.textContent = layer.name;
   questName.textContent = `Квест: ${layer.quest}`;
   actCard.innerHTML = `<strong>${act.title}</strong><span>${act.quest}</span>`;
+  sideQuestList.innerHTML = renderSideQuestSummary();
+  soundButton.textContent = state.soundEnabled ? `Саундтрек: ${currentTrackName()}` : 'Саундтрек: выкл';
   objectiveList.innerHTML = buildObjectives().map((objective) => `<div class="objective ${objective.done ? 'done' : ''}">${objective.done ? '✓' : '•'} ${objective.text}</div>`).join('');
   partyList.innerHTML = state.party.map((member) => `<span class="pill">${member} · доверие ${state.trust[member] ?? 0}</span>`).join('');
   inventoryList.innerHTML = Object.entries(state.inventory)
@@ -236,6 +275,14 @@ function updateHud() {
   achievementList.innerHTML = achievements.map((achievement) => `<span class="achievement ${state.achievements.includes(achievement.id) ? 'done' : ''}" title="${achievement.description}">${achievement.title}</span>`).join('');
   branchPanel.hidden = !(state.layerIndex === 2 && state.branch === 'none');
   newGamePlusButton.hidden = !state.endings.length;
+}
+
+function renderSideQuestSummary() {
+  const quests = sideQuestCatalog.filter((quest) => quest.layer === Math.min(state.layerIndex, layers.length - 1));
+  return quests.map((quest) => {
+    const done = state.completedSideQuests.includes(quest.id);
+    return `<div class="side-quest ${done ? 'done' : ''}">${done ? '✓' : '•'} ${quest.title}</div>`;
+  }).join('') || '<div class="side-quest">В этом слое доска молчит.</div>';
 }
 
 function buildObjectives() {
@@ -565,6 +612,64 @@ function openDialogue() {
   dialogDialog.showModal();
 }
 
+
+function openQuestBoard() {
+  questDialogList.innerHTML = '';
+  const quests = sideQuestCatalog.filter((quest) => quest.layer === Math.min(state.layerIndex, layers.length - 1));
+  quests.forEach((quest) => {
+    const item = document.createElement('div');
+    item.className = `quest-card ${state.completedSideQuests.includes(quest.id) ? 'done' : ''}`;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = state.completedSideQuests.includes(quest.id) ? 'Выполнено' : `Сдать: ${quest.need.item} ×${quest.need.count}`;
+    button.disabled = state.completedSideQuests.includes(quest.id);
+    button.addEventListener('click', () => completeSideQuest(quest));
+    item.innerHTML = `<strong>${quest.title}</strong><span>Нужно: ${quest.need.item} ×${quest.need.count}</span>`;
+    item.append(button);
+    questDialogList.append(item);
+  });
+  if (!quests.length) questDialogList.innerHTML = '<p>Сейчас нет активных сайд-квестов.</p>';
+  if (!questDialog.open) questDialog.showModal();
+}
+
+function completeSideQuest(quest) {
+  if (state.completedSideQuests.includes(quest.id)) return;
+  if ((state.inventory[quest.need.item] || 0) < quest.need.count) {
+    setMessage(`Не хватает ресурса: ${quest.need.item} ×${quest.need.count}.`);
+    return;
+  }
+  state.inventory[quest.need.item] -= quest.need.count;
+  state.hero.xp += quest.reward.xp;
+  state.hero.coins += quest.reward.coins;
+  if (quest.reward.artifact) unlockArtifact(quest.reward.artifact);
+  if (quest.reward.trust) state.trust[quest.reward.trust] = (state.trust[quest.reward.trust] ?? 0) + 2;
+  state.completedSideQuests.push(quest.id);
+  addLog(`Сайд-квест выполнен: ${quest.title}.`);
+  setMessage(`Награда: ${quest.reward.xp} опыта и ${quest.reward.coins} мем-монет.`);
+  saveGame();
+  updateHud();
+  openQuestBoard();
+}
+
+function openCodex() {
+  codexList.innerHTML = codexEntries.map((entry) => `<article class=\"codex-entry\"><h3>${entry.title}</h3><p>${entry.text}</p></article>`).join('');
+  codexDialog.showModal();
+}
+
+function toggleSoundtrack() {
+  state.soundEnabled = !state.soundEnabled;
+  const track = currentTrackName();
+  setMessage(state.soundEnabled ? `Саундтрек включён: ${track}.` : 'Саундтрек выключен.');
+  addLog(state.soundEnabled ? `Играет трек: ${track}.` : 'Саундтрек поставлен на паузу.');
+  saveGame();
+  updateHud();
+}
+
+function currentTrackName() {
+  const track = soundtrack.find((item) => item.layer === Math.min(state.layerIndex, soundtrack.length - 1));
+  return track?.name || soundtrack[soundtrack.length - 1].name;
+}
+
 function openCamp() {
   campAnswer.textContent = 'Ярик уже кипятит чайник и сортирует эмоциональный мусор.';
   campDialog.showModal();
@@ -670,6 +775,7 @@ function normalizeLoadedState(loadedState) {
     trust: { ...fallback.trust, ...loadedState.trust },
     madness: { ...fallback.madness, ...loadedState.madness },
     inventory: { ...fallback.inventory, ...loadedState.inventory },
+    completedSideQuests: loadedState.completedSideQuests || [],
     entities: loadedState.entities || createLayerEntities(loadedState.layerIndex || 0),
   };
 }
@@ -730,6 +836,9 @@ document.addEventListener('keydown', (event) => {
   if (event.code === 'KeyT') openDialogue();
   if (event.code === 'KeyY') syntaxChallenge();
   if (event.code === 'KeyC') openCamp();
+  if (event.code === 'KeyQ') openQuestBoard();
+  if (event.code === 'KeyB') openCodex();
+  if (event.code === 'KeyM') toggleSoundtrack();
   const direction = directions[event.code];
   if (!direction) return;
   event.preventDefault();
@@ -754,6 +863,9 @@ loadButton.addEventListener('click', loadGame);
 talkButton.addEventListener('click', openDialogue);
 syntaxButton.addEventListener('click', syntaxChallenge);
 campButton.addEventListener('click', openCamp);
+questBoardButton.addEventListener('click', openQuestBoard);
+codexButton.addEventListener('click', openCodex);
+soundButton.addEventListener('click', toggleSoundtrack);
 campSendButton.addEventListener('click', sendCampMessage);
 pingButton.addEventListener('click', pingFate);
 document.querySelectorAll('[data-ending]').forEach((button) => button.addEventListener('click', () => chooseEnding(button.dataset.ending)));
