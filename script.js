@@ -20,12 +20,17 @@ const actCard = document.querySelector('#actCard');
 const objectiveList = document.querySelector('#objectiveList');
 const logList = document.querySelector('#logList');
 const sideQuestList = document.querySelector('#sideQuestList');
+const factionList = document.querySelector('#factionList');
+const skillList = document.querySelector('#skillList');
 const partyList = document.querySelector('#partyList');
 const inventoryList = document.querySelector('#inventoryList');
 const achievementList = document.querySelector('#achievementList');
 const craftButton = document.querySelector('#craftButton');
 const newGameButton = document.querySelector('#newGameButton');
 const questBoardButton = document.querySelector('#questBoardButton');
+const atlasButton = document.querySelector('#atlasButton');
+const skillButton = document.querySelector('#skillButton');
+const raidButton = document.querySelector('#raidButton');
 const codexButton = document.querySelector('#codexButton');
 const soundButton = document.querySelector('#soundButton');
 const newGamePlusButton = document.querySelector('#newGamePlusButton');
@@ -43,6 +48,13 @@ const dialogDialog = document.querySelector('#dialogDialog');
 const dialogTitle = document.querySelector('#dialogTitle');
 const dialogText = document.querySelector('#dialogText');
 const dialogChoices = document.querySelector('#dialogChoices');
+const atlasDialog = document.querySelector('#atlasDialog');
+const atlasList = document.querySelector('#atlasList');
+const skillDialog = document.querySelector('#skillDialog');
+const skillPointText = document.querySelector('#skillPointText');
+const skillDialogList = document.querySelector('#skillDialogList');
+const raidDialog = document.querySelector('#raidDialog');
+const raidDialogList = document.querySelector('#raidDialogList');
 const questDialog = document.querySelector('#questDialog');
 const questDialogList = document.querySelector('#questDialogList');
 const codexDialog = document.querySelector('#codexDialog');
@@ -147,6 +159,33 @@ const soundtrack = [
   { layer: 5, name: 'Endless Shiza — procedural modem noise' },
 ];
 
+
+const worldAtlas = [
+  { layer: 0, region: 'Офис / Серверная', scale: 'пролог', nodes: ['Пустой open-space', 'Серверная сегфолта', 'Чат 0 6 0 0'] },
+  { layer: 1, region: 'Python-квартал', scale: 'городской хаб', nodes: ['Школа тензоров', 'pip install love граффити', 'Площадь импортов'] },
+  { layer: 1, region: 'C++-гетто', scale: 'опасный район', nodes: ['malloc-подвал', 'ферма S.O.S.I.', 'Башня 5G'] },
+  { layer: 2, region: 'Гачи-Верс', scale: 'сюжетный данж', nodes: ['Бесконечный спортзал', 'Матовый лабиринт', 'Арена Джакиро'] },
+  { layer: 3, region: 'Крипто-Стадион', scale: 'кульминация', nodes: ['Трибуны биткоина', 'Клетка FEDIL', 'Алтарь доширака'] },
+  { layer: 4, region: 'Задубенный Ангар', scale: 'секретный эндгейм', nodes: ['Танковые доки', 'world_overhaul.sh', 'Комната красной кнопки'] },
+  { layer: 5, region: 'Бесконечная шиза', scale: 'New Game+', nodes: ['Процедурные мемы', 'Случайный архонт', 'Сломанный портал'] },
+];
+
+const skillTree = [
+  { id: 'python_aura', branch: 'python', title: 'import joy+', description: '+12 к максимальной воле и меньше урона по воле.', cost: 1 },
+  { id: 'cpp_memory', branch: 'cpp', title: 'malloc fortress', description: '+16 к максимальному HP.', cost: 1 },
+  { id: 'tank_engineer', branch: 'tank', title: 'Ангарный инженер', description: 'Рейды дешевле на 4 мем-монеты.', cost: 1 },
+  { id: 'sosi_filter', branch: 'any', title: 'Анти-S.O.S.I. фильтр', description: 'Каждая победа снижает S.O.S.I. на 3%.', cost: 2 },
+  { id: 'artifact_smith', branch: 'any', title: 'Артефактный крафтер', description: 'Крафт доширака даёт +6 опыта и шанс на битые пиксели.', cost: 2 },
+  { id: 'dialog_oracle', branch: 'any', title: 'Оракул диалогов', description: 'Диалоги дают +1 дополнительное доверие.', cost: 2 },
+];
+
+const raidCatalog = [
+  { id: 'renpy_station', layer: 1, title: 'Разбитая станция Ren\'Py', risk: 10, cost: 12, reward: { xp: 35, coins: 18, item: 'Битые пиксели', count: 2, faction: 'Глеб Танкист' } },
+  { id: 'meme_market', layer: 1, title: 'Блошиный рынок мемов', risk: 8, cost: 10, reward: { xp: 28, coins: 22, item: 'Специи Гачи', count: 1, faction: 'Ярик' } },
+  { id: 'sanatorium', layer: 3, title: 'Санаторий Заброшенный', risk: 18, cost: 18, reward: { xp: 55, coins: 25, item: 'Бульон дебаггера', count: 2, faction: 'FEDIL' } },
+  { id: 'tank_docks', layer: 4, title: 'Танковые доки world_overhaul', risk: 24, cost: 24, reward: { xp: 70, coins: 34, item: 'Танковый ключ', count: 2, faction: 'Глеб Танкист' } },
+];
+
 const achievements = [
   { id: 'first_blood', title: 'Первый глитч', description: 'Победить первого врага.' },
   { id: 'fedil_free', title: 'Крылья PyTorch', description: 'Освободить FEDIL на Python-ветке.' },
@@ -185,14 +224,18 @@ function createInitialState(isNewGamePlus = false) {
     endings: [],
     newGamePlus: isNewGamePlus,
     soundEnabled: false,
+    skillPoints: isNewGamePlus ? 3 : 1,
     finished: false,
     party: ['Ярик'],
     trust: { FEDIL: 0, 'Сергей Гермоненко': 0, 'Глеб Танкист': 0, Ярик: 2 },
+    factions: { FEDIL: 0, 'Сергей Гермоненко': 0, 'Глеб Танкист': 0, Ярик: 2 },
     madness: { FEDIL: 1, 'Сергей Гермоненко': 2, 'Глеб Танкист': 2, Ярик: 0 },
     inventory: { 'Битые пиксели': 0, 'Бульон дебаггера': 0, 'Специи Гачи': 0, 'Танковый ключ': 0, 'Священный доширак': 0, 'Флешка с новеллой Глеба': 0, 'Кожаный плащ непобедимости': 0, 'Крылья PyTorch': 0 },
     artifacts: [],
     achievements: [],
     completedSideQuests: [],
+    completedRaids: [],
+    learnedSkills: [],
     entities: createLayerEntities(layerIndex),
   };
 }
@@ -266,6 +309,8 @@ function updateHud() {
   actCard.innerHTML = `<strong>${act.title}</strong><span>${act.quest}</span>`;
   sideQuestList.innerHTML = renderSideQuestSummary();
   soundButton.textContent = state.soundEnabled ? `Саундтрек: ${currentTrackName()}` : 'Саундтрек: выкл';
+  factionList.innerHTML = renderFactions();
+  skillList.innerHTML = renderSkills();
   objectiveList.innerHTML = buildObjectives().map((objective) => `<div class="objective ${objective.done ? 'done' : ''}">${objective.done ? '✓' : '•'} ${objective.text}</div>`).join('');
   partyList.innerHTML = state.party.map((member) => `<span class="pill">${member} · доверие ${state.trust[member] ?? 0}</span>`).join('');
   inventoryList.innerHTML = Object.entries(state.inventory)
@@ -275,6 +320,15 @@ function updateHud() {
   achievementList.innerHTML = achievements.map((achievement) => `<span class="achievement ${state.achievements.includes(achievement.id) ? 'done' : ''}" title="${achievement.description}">${achievement.title}</span>`).join('');
   branchPanel.hidden = !(state.layerIndex === 2 && state.branch === 'none');
   newGamePlusButton.hidden = !state.endings.length;
+}
+
+function renderFactions() {
+  return Object.entries(state.factions).map(([name, value]) => `<span class="faction-pill">${name}: ${value}</span>`).join('');
+}
+
+function renderSkills() {
+  const learned = state.learnedSkills.length ? state.learnedSkills.map((id) => skillTree.find((skill) => skill.id === id)?.title || id).join(', ') : 'нет изученных навыков';
+  return `<div class="skill-summary">Очки: ${state.skillPoints}. Изучено: ${learned}</div>`;
 }
 
 function renderSideQuestSummary() {
@@ -376,7 +430,7 @@ function performBattleAction(action) {
 
   const archetype = archetypes[state.archetypeKey];
   const branchBonus = state.branch === 'python' ? 4 : state.branch === 'cpp' ? 8 : state.branch === 'tank' ? 6 : 0;
-  let damage = archetype.attack + branchBonus + Math.floor(Math.random() * 10) + Math.floor(state.hero.xp / 45);
+  let damage = archetype.attack + branchBonus + learnedDamageBonus() + Math.floor(Math.random() * 10) + Math.floor(state.hero.xp / 45);
   let response = 11 + state.layerIndex * 3 + Math.floor(Math.random() * 8);
 
   if (action === 'debuff') {
@@ -408,7 +462,7 @@ function performBattleAction(action) {
 
   const willHit = activeEnemy.boss ? 9 : 3;
   state.hero.hp -= state.archetypeKey === 'crypto' ? response + 3 : response;
-  state.hero.will -= willHit;
+  state.hero.will -= Math.max(1, willHit - (state.learnedSkills.includes('python_aura') ? 2 : 0));
   battleText.textContent = `${archetype.skill}: -${damage} HP врагу. Ответный глитч: -${response} HP и -${willHit} воли. У врага осталось ${activeEnemy.hp}.`;
 
   if (state.hero.hp <= 0 || state.hero.will <= 0 || state.hero.sosi >= 100) failRun();
@@ -423,7 +477,9 @@ function winBattle(damage) {
   state.hero.xp += reward;
   state.hero.coins += activeEnemy.boss ? 28 : 10;
   if (state.archetypeKey === 'jabroni') state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 2);
+  if (state.learnedSkills.includes('sosi_filter')) state.hero.sosi = Math.max(0, state.hero.sosi - 3);
   if (activeEnemy.boss) {
+    state.skillPoints += 1;
     unlockArtifact(`Сигнатура босса ${state.layerIndex + 1}`);
     applyBossReward();
   }
@@ -538,6 +594,10 @@ function craftRamen() {
     state.hero.coins -= 10;
     state.inventory['Священный доширак'] += 1;
     state.ramenCrafted += 1;
+    if (state.learnedSkills.includes('artifact_smith')) {
+      state.hero.xp += 6;
+      if (Math.random() > 0.5) state.inventory['Битые пиксели'] += 1;
+    }
     setMessage('Священный доширак готов: в бою лечит, усиливает код-атаку и нужен для дуэли с меланхолией.');
     addLog('Скрафчен Священный доширак озарения.');
   } else {
@@ -602,6 +662,7 @@ function openDialogue() {
       state.trust[speaker] = (state.trust[speaker] ?? 0) + choice.trust;
       state.madness[speaker] = Math.max(0, (state.madness[speaker] ?? 0) + choice.madness);
       state.hero.xp += choice.trust + 3;
+      if (state.learnedSkills.includes('dialog_oracle')) state.trust[speaker] = (state.trust[speaker] ?? 0) + 1;
       dialogText.textContent = choice.result;
       addLog(`${speaker}: ${choice.result}`);
       saveGame();
@@ -612,6 +673,120 @@ function openDialogue() {
   dialogDialog.showModal();
 }
 
+
+
+function learnedDamageBonus() {
+  let bonus = 0;
+  if (state.learnedSkills.includes('cpp_memory')) bonus += 2;
+  if (state.learnedSkills.includes('tank_engineer')) bonus += 3;
+  return bonus;
+}
+
+function openAtlas() {
+  atlasList.innerHTML = worldAtlas.map((entry) => `
+    <article class="atlas-card">
+      <h3>${entry.region}</h3>
+      <p>${entry.scale}</p>
+      <span>${entry.nodes.join(' • ')}</span>
+    </article>
+  `).join('');
+  atlasDialog.showModal();
+}
+
+function openSkillTree() {
+  skillPointText.textContent = `Свободные очки навыков: ${state.skillPoints}`;
+  skillDialogList.innerHTML = '';
+  skillTree.forEach((skill) => {
+    const lockedByBranch = skill.branch !== 'any' && state.branch !== skill.branch && state.branch !== 'none';
+    const learned = state.learnedSkills.includes(skill.id);
+    const card = document.createElement('div');
+    card.className = `skill-card ${learned ? 'done' : ''}`;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = learned ? 'Изучено' : `Изучить за ${skill.cost}`;
+    button.disabled = learned || lockedByBranch;
+    button.addEventListener('click', () => learnSkill(skill));
+    card.innerHTML = `<strong>${skill.title}</strong><span>${skill.description}</span><small>Ветка: ${skill.branch}</small>`;
+    card.append(button);
+    skillDialogList.append(card);
+  });
+  if (!skillDialog.open) skillDialog.showModal();
+}
+
+function learnSkill(skill) {
+  if (state.learnedSkills.includes(skill.id) || state.skillPoints < skill.cost) {
+    setMessage('Не хватает очков навыков или навык уже изучен.');
+    return;
+  }
+  state.skillPoints -= skill.cost;
+  state.learnedSkills.push(skill.id);
+  if (skill.id === 'python_aura') {
+    state.hero.maxWill += 12;
+    state.hero.will += 12;
+  }
+  if (skill.id === 'cpp_memory') {
+    state.hero.maxHp += 16;
+    state.hero.hp += 16;
+  }
+  setMessage(`Изучен навык: ${skill.title}.`);
+  addLog(`Дерево навыков: ${skill.title}.`);
+  saveGame();
+  updateHud();
+  openSkillTree();
+}
+
+function openRaidBoard() {
+  const activeLayer = Math.min(state.layerIndex, layers.length - 1);
+  const raids = raidCatalog.filter((raid) => raid.layer <= activeLayer + 1);
+  raidDialogList.innerHTML = '';
+  raids.forEach((raid) => {
+    const done = state.completedRaids.includes(raid.id);
+    const card = document.createElement('div');
+    card.className = `raid-card ${done ? 'done' : ''}`;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = done ? 'Зачищено' : `Начать рейд (${raidCost(raid)} монет)`;
+    button.disabled = done;
+    button.addEventListener('click', () => startRaid(raid));
+    card.innerHTML = `<strong>${raid.title}</strong><span>Риск: ${raid.risk}. Награда: ${raid.reward.item} ×${raid.reward.count}</span>`;
+    card.append(button);
+    raidDialogList.append(card);
+  });
+  if (!raidDialog.open) raidDialog.showModal();
+}
+
+function raidCost(raid) {
+  return Math.max(1, raid.cost - (state.learnedSkills.includes('tank_engineer') ? 4 : 0));
+}
+
+function startRaid(raid) {
+  const cost = raidCost(raid);
+  if (state.hero.coins < cost) {
+    setMessage(`Для рейда нужно ${cost} мем-монет.`);
+    return;
+  }
+  state.hero.coins -= cost;
+  const power = state.party.length * 8 + state.learnedSkills.length * 5 + Math.floor(state.hero.xp / 25);
+  const success = power + Math.floor(Math.random() * 30) >= raid.risk;
+  if (success) {
+    state.hero.xp += raid.reward.xp;
+    state.hero.coins += raid.reward.coins;
+    state.inventory[raid.reward.item] = (state.inventory[raid.reward.item] || 0) + raid.reward.count;
+    state.factions[raid.reward.faction] = (state.factions[raid.reward.faction] ?? 0) + 2;
+    state.completedRaids.push(raid.id);
+    unlockArtifact(`Рейд: ${raid.title}`);
+    setMessage(`Рейд успешен: ${raid.title}. Получен редкий лут.`);
+    addLog(`Рейд завершён: ${raid.title}.`);
+  } else {
+    state.hero.hp = Math.max(1, state.hero.hp - raid.risk);
+    state.hero.sosi = Math.min(100, state.hero.sosi + 6);
+    setMessage(`Рейд сорвался: ${raid.title}. HP снижен, S.O.S.I. вырос.`);
+    addLog(`Рейд провален: ${raid.title}.`);
+  }
+  saveGame();
+  updateHud();
+  openRaidBoard();
+}
 
 function openQuestBoard() {
   questDialogList.innerHTML = '';
@@ -642,7 +817,11 @@ function completeSideQuest(quest) {
   state.hero.xp += quest.reward.xp;
   state.hero.coins += quest.reward.coins;
   if (quest.reward.artifact) unlockArtifact(quest.reward.artifact);
-  if (quest.reward.trust) state.trust[quest.reward.trust] = (state.trust[quest.reward.trust] ?? 0) + 2;
+  if (quest.reward.trust) {
+    state.trust[quest.reward.trust] = (state.trust[quest.reward.trust] ?? 0) + 2;
+    state.factions[quest.reward.trust] = (state.factions[quest.reward.trust] ?? 0) + 2;
+  }
+  state.skillPoints += 1;
   state.completedSideQuests.push(quest.id);
   addLog(`Сайд-квест выполнен: ${quest.title}.`);
   setMessage(`Награда: ${quest.reward.xp} опыта и ${quest.reward.coins} мем-монет.`);
@@ -773,9 +952,12 @@ function normalizeLoadedState(loadedState) {
     ...loadedState,
     hero: { ...fallback.hero, ...loadedState.hero },
     trust: { ...fallback.trust, ...loadedState.trust },
+    factions: { ...fallback.factions, ...loadedState.factions },
     madness: { ...fallback.madness, ...loadedState.madness },
     inventory: { ...fallback.inventory, ...loadedState.inventory },
     completedSideQuests: loadedState.completedSideQuests || [],
+    completedRaids: loadedState.completedRaids || [],
+    learnedSkills: loadedState.learnedSkills || [],
     entities: loadedState.entities || createLayerEntities(loadedState.layerIndex || 0),
   };
 }
@@ -837,6 +1019,9 @@ document.addEventListener('keydown', (event) => {
   if (event.code === 'KeyY') syntaxChallenge();
   if (event.code === 'KeyC') openCamp();
   if (event.code === 'KeyQ') openQuestBoard();
+  if (event.code === 'KeyO') openAtlas();
+  if (event.code === 'KeyK') openSkillTree();
+  if (event.code === 'KeyL') openRaidBoard();
   if (event.code === 'KeyB') openCodex();
   if (event.code === 'KeyM') toggleSoundtrack();
   const direction = directions[event.code];
@@ -864,6 +1049,9 @@ talkButton.addEventListener('click', openDialogue);
 syntaxButton.addEventListener('click', syntaxChallenge);
 campButton.addEventListener('click', openCamp);
 questBoardButton.addEventListener('click', openQuestBoard);
+atlasButton.addEventListener('click', openAtlas);
+skillButton.addEventListener('click', openSkillTree);
+raidButton.addEventListener('click', openRaidBoard);
 codexButton.addEventListener('click', openCodex);
 soundButton.addEventListener('click', toggleSoundtrack);
 campSendButton.addEventListener('click', sendCampMessage);

@@ -493,3 +493,78 @@ dialog::backdrop { background: rgba(1, 4, 10, 0.72); }
   filter: grayscale(0.7);
   opacity: 0.7;
 }
+
+.faction-list,
+.skill-list,
+.atlas-list,
+.skill-dialog-list,
+.raid-dialog-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.faction-pill,
+.skill-summary,
+.atlas-card,
+.skill-card,
+.raid-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 10px 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.faction-pill {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  border-radius: 999px;
+  color: var(--accent-2);
+  font-weight: 900;
+}
+
+.atlas-card h3,
+.skill-card strong,
+.raid-card strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text);
+}
+
+.atlas-card span,
+.skill-card span,
+.raid-card span,
+.skill-card small {
+  display: block;
+}
+
+.skill-card,
+.raid-card {
+  display: grid;
+  gap: 8px;
+}
+
+.skill-card.done,
+.raid-card.done {
+  color: var(--accent);
+  border-color: rgba(119, 255, 192, 0.32);
+}
+
+.skill-card button,
+.raid-card button {
+  justify-self: start;
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: #06150f;
+  background: linear-gradient(135deg, var(--accent), var(--warning));
+  font-weight: 900;
+}
+
+.skill-card button:disabled,
+.raid-card button:disabled {
+  cursor: default;
+  filter: grayscale(0.7);
+  opacity: 0.7;
+}
