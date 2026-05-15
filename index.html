@@ -84,6 +84,7 @@
             <button id="raidButton" type="button">Рейдовые операции</button>
             <button id="codexButton" type="button">Кодекс мира</button>
             <button id="soundButton" type="button">Саундтрек: выкл</button>
+            <button id="devButton" type="button">Dev-панель</button>
             <button id="newGamePlusButton" type="button" hidden>Бесконечная шиза NG+</button>
           </div>
 
@@ -104,7 +105,7 @@
             <li><kbd>1</kbd> код-атака, <kbd>2</kbd> дебафф, <kbd>3</kbd> артефакт в бою.</li>
             <li><kbd>T</kbd> диалог, <kbd>Y</kbd> синтаксис, <kbd>C</kbd> лагерь.</li>
             <li><kbd>Q</kbd> сайд-квесты, <kbd>O</kbd> атлас, <kbd>K</kbd> навыки, <kbd>L</kbd> рейды.</li>
-            <li><kbd>B</kbd> кодекс, <kbd>M</kbd> саундтрек.</li>
+            <li><kbd>B</kbd> кодекс, <kbd>M</kbd> саундтрек, <kbd>`</kbd> Dev-панель.</li>
             <li>🌀 Разрыв кода переносит в следующий слой после босса и целей акта.</li>
           </ul>
 
@@ -213,6 +214,36 @@
       </form>
     </dialog>
 
+    <dialog id="devDialog" class="dev-dialog">
+      <form method="dialog">
+        <h2>Dev-панель контент-дизайнера</h2>
+        <p>Инструменты для быстрого тестирования слоёв, квестов, экономики и сохранений.</p>
+        <div class="dev-grid">
+          <label>
+            Телепорт на слой
+            <select id="devLayerSelect"></select>
+          </label>
+          <button id="devTeleportButton" type="button">Телепорт</button>
+          <label>
+            Выдать ресурс/стат
+            <select id="devGrantSelect"></select>
+          </label>
+          <label>
+            Количество
+            <input id="devGrantAmount" type="number" min="1" value="1" />
+          </label>
+          <button id="devGrantButton" type="button">Выдать</button>
+          <button id="devCompleteLayerButton" type="button">Закрыть цели слоя</button>
+          <button id="devExportButton" type="button">Экспорт сейва</button>
+          <button id="devImportButton" type="button">Импорт сейва</button>
+          <button id="devResetSaveButton" type="button" class="danger-button">Сбросить сейв</button>
+        </div>
+        <textarea id="devSaveText" rows="7" placeholder="Здесь появится JSON сейва для экспорта/импорта"></textarea>
+        <p id="devStatus" class="dev-status"></p>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
     <dialog id="endingDialog" class="ending-dialog">
       <form method="dialog">
         <h2>Финальный выбор</h2>
@@ -227,6 +258,7 @@
       </form>
     </dialog>
 
+    <script src="data.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

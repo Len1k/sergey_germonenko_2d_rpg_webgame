@@ -33,6 +33,7 @@ const skillButton = document.querySelector('#skillButton');
 const raidButton = document.querySelector('#raidButton');
 const codexButton = document.querySelector('#codexButton');
 const soundButton = document.querySelector('#soundButton');
+const devButton = document.querySelector('#devButton');
 const newGamePlusButton = document.querySelector('#newGamePlusButton');
 const talkButton = document.querySelector('#talkButton');
 const syntaxButton = document.querySelector('#syntaxButton');
@@ -63,138 +64,41 @@ const campDialog = document.querySelector('#campDialog');
 const campInput = document.querySelector('#campInput');
 const campSendButton = document.querySelector('#campSendButton');
 const campAnswer = document.querySelector('#campAnswer');
+const devDialog = document.querySelector('#devDialog');
+const devLayerSelect = document.querySelector('#devLayerSelect');
+const devGrantSelect = document.querySelector('#devGrantSelect');
+const devGrantAmount = document.querySelector('#devGrantAmount');
+const devTeleportButton = document.querySelector('#devTeleportButton');
+const devGrantButton = document.querySelector('#devGrantButton');
+const devCompleteLayerButton = document.querySelector('#devCompleteLayerButton');
+const devExportButton = document.querySelector('#devExportButton');
+const devImportButton = document.querySelector('#devImportButton');
+const devResetSaveButton = document.querySelector('#devResetSaveButton');
+const devSaveText = document.querySelector('#devSaveText');
+const devStatus = document.querySelector('#devStatus');
 const endingDialog = document.querySelector('#endingDialog');
 const endingResult = document.querySelector('#endingResult');
 
 const tileSize = 64;
-const artifactGoal = 10;
-const saveKey = 'deep-dream-protocol-save-v2';
-const directions = {
-  ArrowUp: { x: 0, y: -1 }, KeyW: { x: 0, y: -1 },
-  ArrowDown: { x: 0, y: 1 }, KeyS: { x: 0, y: 1 },
-  ArrowLeft: { x: -1, y: 0 }, KeyA: { x: -1, y: 0 },
-  ArrowRight: { x: 1, y: 0 }, KeyD: { x: 1, y: 0 },
-};
-
-const archetypes = {
-  jabroni: { title: 'Джаброни', hp: 132, will: 88, coins: 8, attack: 30, skill: 'Кожаный суплекс', color: '#ffd166', passive: 'Суплексы дают +2 HP после победы.' },
-  shaman: { title: 'Нейро-шаман', hp: 98, will: 132, coins: 12, attack: 23, skill: 'import joy', color: '#77ffc0', passive: 'Python-магия медленнее растит S.O.S.I.' },
-  crypto: { title: 'Крипто-омега', hp: 88, will: 96, coins: 50, attack: 20, skill: 'NFT-рывок', color: '#ff8fab', passive: 'Больше мем-монет, но сильнее психоатаки.' },
-};
-
-const campaignActs = [
-  { act: 0, title: 'Пролог — Синий экран смерти', layer: 'Офис', quest: 'Найти код 0 6 0 0, флешку Глеба и пережить сегфолт-гиганта.' },
-  { act: 1, title: 'C++-ивация страны', layer: 'Кибер-город', quest: 'Взломать вышку S.O.S.I., помочь Python-кварталу и найти след FEDIL.' },
-  { act: 2, title: 'Битва при Оверфлоу', layer: 'Гачи-Верс', quest: 'Сделать выбор стороны: Python, C++ или танковое Задубение.' },
-  { act: 3, title: 'Код 0 6 0 0', layer: 'Санаторий / скрытый сервер', quest: 'Раскрыть, что S.O.S.I. управляет мемами и дофамином.' },
-  { act: 4, title: 'Спасти FEDIL', layer: 'Крипто-Стадион', quest: 'Сварить доширак озарения и победить Your Sweet Misery в диалоговой дуэли.' },
-  { act: 5, title: 'Центр Управления Реальностью', layer: 'Задубенный Ангар', quest: 'Собрать артефакты, остановить world_overhaul.sh и выбрать финал.' },
-];
-
-const layers = [
-  {
-    name: 'Слой 1: Офис', act: 0, quest: 'Найти код 0 6 0 0 и флешку Глеба',
-    palette: { floor: '#183f2a', wall: '#263552', portal: '#2a2f63' },
-    map: ['##########', '#..A..E..#', '#.##.###.#', '#....#...#', '#.R#.#M#.#', '#..#...#.#', '#.###.#..#', '#E..A.#P.#', '#...#..C.#', '##########'],
-  },
-  {
-    name: 'Слой 2: Кибер-город', act: 1, quest: 'Взломать вышку S.O.S.I. и найти FEDIL',
-    palette: { floor: '#12384b', wall: '#2f314f', portal: '#35245e' },
-    map: ['##########', '#..E..A..#', '#.##.##..#', '#...M#...#', '#.A#.#R#.#', '#..#...#.#', '#.##E.#..#', '#..C..#P.#', '#...#..A.#', '##########'],
-  },
-  {
-    name: 'Слой 3: Гачи-Верс', act: 2, quest: 'Выбрать сторону и добыть кожаный плащ непобедимости',
-    palette: { floor: '#3c2447', wall: '#4d2c3f', portal: '#1f4575' },
-    map: ['##########', '#A..E...R#', '#.##.##..#', '#...#..A.#', '#.E#M#.#.#', '#..#...#.#', '#.##..#..#', '#..A..#P.#', '#...#..C.#', '##########'],
-  },
-  {
-    name: 'Слой 4: Крипто-Стадион', act: 4, quest: 'Сварить доширак озарения и освободить FEDIL',
-    palette: { floor: '#27334f', wall: '#52324c', portal: '#5f4b1e' },
-    map: ['##########', '#..E..A..#', '#.##.##R.#', '#...M#...#', '#.A#.#E#.#', '#..#...#.#', '#.##..#..#', '#..C..#P.#', '#...#..A.#', '##########'],
-  },
-  {
-    name: 'Слой 5: Задубенный Ангар', act: 5, quest: 'Собрать танковые ключи, пережить world_overhaul.sh и выбрать концовку',
-    palette: { floor: '#3a3829', wall: '#28364c', portal: '#683232' },
-    map: ['##########', '#A.E..A..#', '#.##.##..#', '#...M#...#', '#.E#.#R#.#', '#..#...#.#', '#.##..#..#', '#..A..#P.#', '#...#..C.#', '##########'],
-  },
-];
-
-const endlessLayer = {
-  name: 'NG+: Бесконечная шиза', act: 6, quest: 'Процедурная охота за случайными боссами и мем-инфекциями',
-  palette: { floor: '#1f2148', wall: '#442b5f', portal: '#2a6b58' },
-  map: ['##########', '#A.E.RA..#', '#.##.##..#', '#..E#..C.#', '#.A#M#.#.#', '#..#...#.#', '#.##E.#..#', '#..A..#P.#', '#C..#..R.#', '##########'],
-};
-
-const enemies = {
-  E: ['Джаброни-пехота', 'S.O.S.I.-строка', 'Билли-рекурсия', 'Баг-глитч', 'Крипто-обезьяна'],
-  M: ['Сегфолт-гигант', 'Серж-компилятор', 'Джакиро-дракон', 'Your Sweet Misery', 'Глеб Танкист', 'Случайный мем-архонт'],
-};
-
-const resourceNames = { C: 'Битые пиксели', R: 'Бульон дебаггера', A: 'Танковый ключ' };
-const branchTitles = { none: 'Не выбрана', python: 'Python свобода', cpp: 'C++ порядок', tank: 'Задубение' };
-
-const sideQuestCatalog = [
-  { id: 'office_chat', layer: 0, title: 'Найти код 0 6 0 0 в чате', need: { item: 'Битые пиксели', count: 1 }, reward: { xp: 18, coins: 8, artifact: 'Лог 0 6 0 0' } },
-  { id: 'python_tower', layer: 1, title: 'Перепрошить S.O.S.I.-вышку', need: { item: 'Бульон дебаггера', count: 1 }, reward: { xp: 26, coins: 12, trust: 'FEDIL' } },
-  { id: 'gachi_cloak', layer: 2, title: 'Собрать гачи-материалы для плаща', need: { item: 'Танковый ключ', count: 1 }, reward: { xp: 30, coins: 14, artifact: 'Гачи-нашивка' } },
-  { id: 'crypto_ramen', layer: 3, title: 'Сварить доширак для FEDIL', need: { item: 'Священный доширак', count: 1 }, reward: { xp: 40, coins: 18, trust: 'FEDIL' } },
-  { id: 'hangar_patch', layer: 4, title: 'Переписать world_overhaul.sh', need: { item: 'Танковый ключ', count: 2 }, reward: { xp: 55, coins: 25, artifact: 'Патч против Задубения' } },
-];
-
-const codexEntries = [
-  { title: 'S.O.S.I.-строки', text: 'Протокол меметического управления. В игре выражен шкалой S.O.S.I.: при 100% симуляция проиграна.' },
-  { title: 'FEDIL', text: 'Python-гуру и источник ветки свободы. Высокое доверие открывает мягкие финалы и цитатник.' },
-  { title: 'Гермоненко', text: 'C++-архитектор компиляции реальности. Его ветка даёт HP и сильный порядок, но ускоряет тревогу.' },
-  { title: 'Глеб Танкист', text: 'Инженер Задубения. Танковые ключи нужны для ангарной ветки и world_overhaul.sh.' },
-  { title: 'Священный доширак', text: 'Главный сейв-ритуал и боевой артефакт: лечит, усиливает атаку и нужен в Крипто-Стадионе.' },
-  { title: 'New Game+', text: 'После любой концовки открывается слой «Бесконечная шиза» с усиленным стартом и случайным мем-архонтом.' },
-];
-
-const soundtrack = [
-  { layer: 0, name: 'Office BSOD — 56k dark ambient' },
-  { layer: 1, name: 'Cyber City — pip install love chillstep' },
-  { layer: 2, name: 'Gachi Verse — 8-bit gym remix' },
-  { layer: 3, name: 'Crypto Stadium — melancholy synthwave' },
-  { layer: 4, name: 'Frozen Hangar — tank industrial' },
-  { layer: 5, name: 'Endless Shiza — procedural modem noise' },
-];
-
-
-const worldAtlas = [
-  { layer: 0, region: 'Офис / Серверная', scale: 'пролог', nodes: ['Пустой open-space', 'Серверная сегфолта', 'Чат 0 6 0 0'] },
-  { layer: 1, region: 'Python-квартал', scale: 'городской хаб', nodes: ['Школа тензоров', 'pip install love граффити', 'Площадь импортов'] },
-  { layer: 1, region: 'C++-гетто', scale: 'опасный район', nodes: ['malloc-подвал', 'ферма S.O.S.I.', 'Башня 5G'] },
-  { layer: 2, region: 'Гачи-Верс', scale: 'сюжетный данж', nodes: ['Бесконечный спортзал', 'Матовый лабиринт', 'Арена Джакиро'] },
-  { layer: 3, region: 'Крипто-Стадион', scale: 'кульминация', nodes: ['Трибуны биткоина', 'Клетка FEDIL', 'Алтарь доширака'] },
-  { layer: 4, region: 'Задубенный Ангар', scale: 'секретный эндгейм', nodes: ['Танковые доки', 'world_overhaul.sh', 'Комната красной кнопки'] },
-  { layer: 5, region: 'Бесконечная шиза', scale: 'New Game+', nodes: ['Процедурные мемы', 'Случайный архонт', 'Сломанный портал'] },
-];
-
-const skillTree = [
-  { id: 'python_aura', branch: 'python', title: 'import joy+', description: '+12 к максимальной воле и меньше урона по воле.', cost: 1 },
-  { id: 'cpp_memory', branch: 'cpp', title: 'malloc fortress', description: '+16 к максимальному HP.', cost: 1 },
-  { id: 'tank_engineer', branch: 'tank', title: 'Ангарный инженер', description: 'Рейды дешевле на 4 мем-монеты.', cost: 1 },
-  { id: 'sosi_filter', branch: 'any', title: 'Анти-S.O.S.I. фильтр', description: 'Каждая победа снижает S.O.S.I. на 3%.', cost: 2 },
-  { id: 'artifact_smith', branch: 'any', title: 'Артефактный крафтер', description: 'Крафт доширака даёт +6 опыта и шанс на битые пиксели.', cost: 2 },
-  { id: 'dialog_oracle', branch: 'any', title: 'Оракул диалогов', description: 'Диалоги дают +1 дополнительное доверие.', cost: 2 },
-];
-
-const raidCatalog = [
-  { id: 'renpy_station', layer: 1, title: 'Разбитая станция Ren\'Py', risk: 10, cost: 12, reward: { xp: 35, coins: 18, item: 'Битые пиксели', count: 2, faction: 'Глеб Танкист' } },
-  { id: 'meme_market', layer: 1, title: 'Блошиный рынок мемов', risk: 8, cost: 10, reward: { xp: 28, coins: 22, item: 'Специи Гачи', count: 1, faction: 'Ярик' } },
-  { id: 'sanatorium', layer: 3, title: 'Санаторий Заброшенный', risk: 18, cost: 18, reward: { xp: 55, coins: 25, item: 'Бульон дебаггера', count: 2, faction: 'FEDIL' } },
-  { id: 'tank_docks', layer: 4, title: 'Танковые доки world_overhaul', risk: 24, cost: 24, reward: { xp: 70, coins: 34, item: 'Танковый ключ', count: 2, faction: 'Глеб Танкист' } },
-];
-
-const achievements = [
-  { id: 'first_blood', title: 'Первый глитч', description: 'Победить первого врага.' },
-  { id: 'fedil_free', title: 'Крылья PyTorch', description: 'Освободить FEDIL на Python-ветке.' },
-  { id: 'sosi_survivor', title: 'S.O.S.I.-выживший', description: 'Дожить до 80% S.O.S.I. и не проиграть.' },
-  { id: 'tank_keys', title: 'Суперглеб', description: 'Собрать 5 танковых ключей.' },
-  { id: 'ramen_master', title: 'Доширак озарения', description: 'Скрафтить 3 священных доширака.' },
-  { id: 'syntax_lord', title: 'Синтаксис судьбы', description: 'Выиграть 3 синтаксические дуэли.' },
-  { id: 'all_endings', title: 'Архитектор реальностей', description: 'Открыть любую концовку и New Game+.' },
-];
+const {
+  artifactGoal,
+  saveKey,
+  directions,
+  archetypes,
+  campaignActs,
+  layers,
+  endlessLayer,
+  enemies,
+  resourceNames,
+  branchTitles,
+  sideQuestCatalog,
+  codexEntries,
+  soundtrack,
+  worldAtlas,
+  skillTree,
+  raidCatalog,
+  achievements
+} = window.DeepDreamData;
 
 let state;
 let activeEnemy = null;
@@ -205,6 +109,66 @@ function readPositions(map, symbol) {
     if (cell === symbol) positions.push({ x, y });
   }));
   return positions;
+}
+
+
+function validateContentData() {
+  const errors = [];
+  const assert = (condition, messageText) => {
+    if (!condition) errors.push(messageText);
+  };
+
+  assert(window.DeepDreamData, 'DeepDreamData is not loaded. Include data.js before script.js.');
+  assert(Object.keys(archetypes).length > 0, 'At least one archetype is required.');
+  assert(layers.length > 0, 'At least one campaign layer is required.');
+  assert(artifactGoal > 0, 'artifactGoal must be greater than zero.');
+
+  layers.concat(endlessLayer).forEach((layer, layerIndex) => {
+    assert(Array.isArray(layer.map), `${layer.name} must define a map array.`);
+    assert(layer.map.length > 0, `${layer.name} map cannot be empty.`);
+    const width = layer.map[0]?.length;
+    layer.map.forEach((row, rowIndex) => {
+      assert(row.length === width, `${layer.name} row ${rowIndex} has inconsistent width.`);
+    });
+    assert(readPositions(layer.map, 'P').length === 1, `${layer.name} must contain exactly one portal tile.`);
+    assert(readPositions(layer.map, 'M').length >= 1, `${layer.name} must contain at least one boss tile.`);
+    ['C', 'R', 'A'].forEach((symbol) => {
+      assert(resourceNames[symbol], `${layer.name} uses resource symbol ${symbol}, but it has no resource name.`);
+    });
+    if (layerIndex < layers.length) {
+      assert(campaignActs.some((act) => act.act === layer.act), `${layer.name} references missing campaign act ${layer.act}.`);
+    }
+  });
+
+  const uniqueIds = (items, label) => {
+    const seen = new Set();
+    items.forEach((item) => {
+      assert(item.id, `${label} item is missing id.`);
+      assert(!seen.has(item.id), `${label} has duplicate id: ${item.id}.`);
+      seen.add(item.id);
+    });
+  };
+
+  uniqueIds(sideQuestCatalog, 'sideQuestCatalog');
+  uniqueIds(skillTree, 'skillTree');
+  uniqueIds(raidCatalog, 'raidCatalog');
+  uniqueIds(achievements, 'achievements');
+
+  sideQuestCatalog.forEach((quest) => {
+    assert(quest.layer >= 0 && quest.layer < layers.length, `Side quest ${quest.id} references invalid layer ${quest.layer}.`);
+    assert(quest.need?.item && quest.need.count > 0, `Side quest ${quest.id} must define item need and positive count.`);
+    assert(quest.reward?.xp >= 0 && quest.reward?.coins >= 0, `Side quest ${quest.id} must define non-negative xp and coins rewards.`);
+  });
+
+  raidCatalog.forEach((raid) => {
+    assert(raid.layer >= 0 && raid.layer < layers.length, `Raid ${raid.id} references invalid layer ${raid.layer}.`);
+    assert(raid.cost > 0 && raid.risk > 0, `Raid ${raid.id} must define positive cost and risk.`);
+    assert(raid.reward?.item && raid.reward.count > 0, `Raid ${raid.id} must define item reward and positive count.`);
+  });
+
+  if (errors.length) {
+    throw new Error(`Content validation failed:\n${errors.join('\n')}`);
+  }
 }
 
 function createInitialState(isNewGamePlus = false) {
@@ -883,6 +847,107 @@ function pingFate() {
   updateHud();
 }
 
+
+function openDevPanel() {
+  devLayerSelect.innerHTML = layers
+    .map((layer, index) => `<option value="${index}">${index}: ${layer.name}</option>`)
+    .join('') + `<option value="${layers.length}">${layers.length}: ${endlessLayer.name}</option>`;
+  devLayerSelect.value = String(state.layerIndex);
+
+  const inventoryItems = Object.keys(state.inventory).map((item) => ({ value: `item:${item}`, label: `Предмет: ${item}` }));
+  const utilityItems = [
+    { value: 'coins', label: 'Мем-монеты' },
+    { value: 'xp', label: 'Опыт' },
+    { value: 'skillPoints', label: 'Очки навыков' },
+    { value: 'artifact', label: 'Debug-артефакт' },
+    { value: 'sosiDown', label: 'Снизить S.O.S.I.' },
+  ];
+  devGrantSelect.innerHTML = utilityItems.concat(inventoryItems)
+    .map((entry) => `<option value="${entry.value}">${entry.label}</option>`)
+    .join('');
+  devStatus.textContent = 'Готово к тестированию контента.';
+  devDialog.showModal();
+}
+
+function devTeleportToLayer() {
+  const targetLayer = Number(devLayerSelect.value);
+  state.layerIndex = targetLayer;
+  state.hero.x = 1;
+  state.hero.y = 1;
+  state.finished = false;
+  state.entities = createLayerEntities(targetLayer);
+  if (targetLayer > 2 && state.branch === 'none') state.branch = 'python';
+  devStatus.textContent = `Телепорт: ${getLayer().name}.`;
+  addLog(`Dev: телепорт на ${getLayer().name}.`);
+  saveGame();
+  updateHud();
+  draw();
+}
+
+function devGrantSelection() {
+  const amount = Math.max(1, Number(devGrantAmount.value) || 1);
+  const selected = devGrantSelect.value;
+  if (selected.startsWith('item:')) {
+    const item = selected.slice(5);
+    state.inventory[item] = (state.inventory[item] || 0) + amount;
+    devStatus.textContent = `Выдано: ${item} ×${amount}.`;
+  } else if (selected === 'coins') {
+    state.hero.coins += amount;
+    devStatus.textContent = `Выдано мем-монет: ${amount}.`;
+  } else if (selected === 'xp') {
+    state.hero.xp += amount;
+    devStatus.textContent = `Выдано опыта: ${amount}.`;
+  } else if (selected === 'skillPoints') {
+    state.skillPoints += amount;
+    devStatus.textContent = `Выдано очков навыков: ${amount}.`;
+  } else if (selected === 'artifact') {
+    unlockArtifact(`Dev-артефакт ${state.artifacts.length + 1}`);
+    devStatus.textContent = 'Выдан debug-артефакт.';
+  } else if (selected === 'sosiDown') {
+    state.hero.sosi = Math.max(0, state.hero.sosi - amount);
+    devStatus.textContent = `S.O.S.I. снижен на ${amount}.`;
+  }
+  addLog(`Dev: ${devStatus.textContent}`);
+  saveGame();
+  updateHud();
+}
+
+function devCompleteLayerGoals() {
+  state.entities.enemies = state.entities.enemies.filter((enemy) => !enemy.boss);
+  unlockArtifact(`Dev-сигнатура слоя ${state.layerIndex + 1}`);
+  if (state.layerIndex === 2 && state.branch === 'none') state.branch = 'python';
+  devStatus.textContent = 'Цели слоя закрыты: босс удалён, сигнатура выдана.';
+  addLog('Dev: цели текущего слоя закрыты.');
+  saveGame();
+  updateHud();
+  draw();
+}
+
+function devExportSave() {
+  devSaveText.value = JSON.stringify(state, null, 2);
+  devStatus.textContent = 'Сейв экспортирован в текстовое поле.';
+}
+
+function devImportSave() {
+  try {
+    state = normalizeLoadedState(JSON.parse(devSaveText.value));
+    activeEnemy = null;
+    devStatus.textContent = 'Сейв импортирован.';
+    addLog('Dev: сейв импортирован из JSON.');
+    saveGame();
+    updateHud();
+    draw();
+  } catch (error) {
+    devStatus.textContent = `Ошибка импорта: ${error.message}`;
+  }
+}
+
+function devResetSave() {
+  localStorage.removeItem(saveKey);
+  resetGame(false, true);
+  devStatus.textContent = 'Сейв сброшен, новая симуляция создана.';
+}
+
 function showEndingDialog() {
   endingResult.textContent = '';
   endingDialog.showModal();
@@ -1024,6 +1089,7 @@ document.addEventListener('keydown', (event) => {
   if (event.code === 'KeyL') openRaidBoard();
   if (event.code === 'KeyB') openCodex();
   if (event.code === 'KeyM') toggleSoundtrack();
+  if (event.code === 'Backquote') openDevPanel();
   const direction = directions[event.code];
   if (!direction) return;
   event.preventDefault();
@@ -1054,8 +1120,16 @@ skillButton.addEventListener('click', openSkillTree);
 raidButton.addEventListener('click', openRaidBoard);
 codexButton.addEventListener('click', openCodex);
 soundButton.addEventListener('click', toggleSoundtrack);
+devButton.addEventListener('click', openDevPanel);
+devTeleportButton.addEventListener('click', devTeleportToLayer);
+devGrantButton.addEventListener('click', devGrantSelection);
+devCompleteLayerButton.addEventListener('click', devCompleteLayerGoals);
+devExportButton.addEventListener('click', devExportSave);
+devImportButton.addEventListener('click', devImportSave);
+devResetSaveButton.addEventListener('click', devResetSave);
 campSendButton.addEventListener('click', sendCampMessage);
 pingButton.addEventListener('click', pingFate);
 document.querySelectorAll('[data-ending]').forEach((button) => button.addEventListener('click', () => chooseEnding(button.dataset.ending)));
 
+validateContentData();
 resetGame(false, false);
