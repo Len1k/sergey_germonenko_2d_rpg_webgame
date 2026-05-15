@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deep Dream Protocol — 2D RPG</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <section class="hero-panel" aria-labelledby="game-title">
+        <div>
+          <p class="eyebrow">Glitch pixel RPG / демо-пролог</p>
+          <h1 id="game-title">Deep Dream Protocol</h1>
+          <p class="intro">
+            Цифровая ноосфера распалась на слои: Офис, Кибер-город, Гачи-Верс,
+            Крипто-Стадион и Задубенный Ангар. Выбери архетип, собери артефакты,
+            освободи FEDIL и реши, на каком коде будет перезапущена реальность.
+          </p>
+        </div>
+        <button id="newGameButton" type="button">Новая симуляция</button>
+      </section>
+
+      <section class="setup-panel" aria-label="Создание персонажа">
+        <label>
+          Имя в консоли
+          <input id="heroNameInput" maxlength="18" value="Избранный" autocomplete="off" />
+        </label>
+        <label>
+          Архетип
+          <select id="classSelect">
+            <option value="jabroni">Джаброни — ближний бой</option>
+            <option value="shaman" selected>Нейро-шаман — Python-магия</option>
+            <option value="crypto">Крипто-омега — доход и риск</option>
+          </select>
+        </label>
+        <button id="startButton" type="button">Скомпилировать героя</button>
+      </section>
+
+      <section class="ticker" aria-label="Новостная лента">
+        <div id="newsTicker">Курс биткоина спорит с прогнозом FEDIL • Глеб строит новый ангар • Очередь за дошираком выросла до 300 человек</div>
+      </section>
+
+      <section class="hud" aria-label="Показатели героя">
+        <div class="stat-card"><span>HP</span><strong id="healthValue">100</strong></div>
+        <div class="stat-card"><span>Воля к коду</span><strong id="willValue">100</strong></div>
+        <div class="stat-card"><span>Опыт</span><strong id="xpValue">0</strong></div>
+        <div class="stat-card"><span>Мем-монеты</span><strong id="coinValue">0</strong></div>
+        <div class="stat-card"><span>Сосисочность</span><strong id="sosiValue">0%</strong></div>
+        <div class="stat-card"><span>Артефакты</span><strong id="artifactValue">0 / 5</strong></div>
+      </section>
+
+      <section class="game-layout">
+        <div class="board-wrap">
+          <div class="layer-strip">
+            <span id="layerName">Офис</span>
+            <span id="questName">Квест: найти код 0 6 0 0</span>
+          </div>
+          <canvas id="gameCanvas" width="640" height="640" aria-label="Игровая карта" role="img"></canvas>
+          <div id="message" class="message" aria-live="polite"></div>
+          <div class="mobile-controls" aria-label="Экранное управление">
+            <button data-move="up" type="button">▲</button>
+            <button data-move="left" type="button">◀</button>
+            <button data-move="down" type="button">▼</button>
+            <button data-move="right" type="button">▶</button>
+          </div>
+        </div>
+
+        <aside class="side-panel">
+          <h2>Команды</h2>
+          <ul>
+            <li><kbd>WASD</kbd> / <kbd>стрелки</kbd> — движение по слою.</li>
+            <li><kbd>1</kbd> Код-атака, <kbd>2</kbd> дебафф, <kbd>3</kbd> артефакт в бою.</li>
+            <li>🌀 Разрыв кода переносит в следующий слой после выполнения квеста.</li>
+            <li>🍜 У костра запускается сохранение через мини-игру с дошираком.</li>
+          </ul>
+
+          <h2>Отряд</h2>
+          <div id="partyList" class="pill-list"></div>
+
+          <h2>Инвентарь и крафт</h2>
+          <div id="inventoryList" class="inventory-list"></div>
+          <button id="craftButton" type="button" class="wide-button">Сварить Священный доширак</button>
+
+          <h2>Журнал</h2>
+          <ol id="logList" class="log-list"></ol>
+        </aside>
+      </section>
+    </main>
+
+    <dialog id="battleDialog" class="battle-dialog">
+      <form method="dialog">
+        <h2 id="battleTitle">Бой</h2>
+        <p id="battleText"></p>
+        <div class="battle-actions">
+          <button id="attackButton" value="attack" type="button">1 — Код-атака</button>
+          <button id="debuffButton" value="debuff" type="button">2 — try/except</button>
+          <button id="artifactButton" value="artifact" type="button">3 — Артефакт</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="endingDialog" class="ending-dialog">
+      <form method="dialog">
+        <h2>Финальный выбор</h2>
+        <p>Центр Управления Реальностью ждёт команду. Какой протокол запустить?</p>
+        <div class="ending-grid">
+          <button data-ending="python" type="button">print("Свобода")</button>
+          <button data-ending="cpp" type="button">compile reality.exe</button>
+          <button data-ending="tank" type="button">world_overhaul.sh</button>
+          <button data-ending="merge" type="button">merge --squash</button>
+        </div>
+        <p id="endingResult" class="ending-result"></p>
+      </form>
+    </dialog>
+
+    <script src="script.js"></script>
+  </body>
+</html>
