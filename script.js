@@ -3,31 +3,52 @@ const ctx = canvas.getContext('2d');
 const heroNameInput = document.querySelector('#heroNameInput');
 const classSelect = document.querySelector('#classSelect');
 const startButton = document.querySelector('#startButton');
+const loadButton = document.querySelector('#loadButton');
 const healthValue = document.querySelector('#healthValue');
 const willValue = document.querySelector('#willValue');
 const xpValue = document.querySelector('#xpValue');
 const coinValue = document.querySelector('#coinValue');
 const sosiValue = document.querySelector('#sosiValue');
+const actValue = document.querySelector('#actValue');
 const artifactValue = document.querySelector('#artifactValue');
+const branchValue = document.querySelector('#branchValue');
 const layerName = document.querySelector('#layerName');
 const questName = document.querySelector('#questName');
 const message = document.querySelector('#message');
+const branchPanel = document.querySelector('#branchPanel');
+const actCard = document.querySelector('#actCard');
+const objectiveList = document.querySelector('#objectiveList');
 const logList = document.querySelector('#logList');
 const partyList = document.querySelector('#partyList');
 const inventoryList = document.querySelector('#inventoryList');
+const achievementList = document.querySelector('#achievementList');
 const craftButton = document.querySelector('#craftButton');
 const newGameButton = document.querySelector('#newGameButton');
+const newGamePlusButton = document.querySelector('#newGamePlusButton');
+const talkButton = document.querySelector('#talkButton');
+const syntaxButton = document.querySelector('#syntaxButton');
+const campButton = document.querySelector('#campButton');
+const pingButton = document.querySelector('#pingButton');
 const battleDialog = document.querySelector('#battleDialog');
 const battleTitle = document.querySelector('#battleTitle');
 const battleText = document.querySelector('#battleText');
 const attackButton = document.querySelector('#attackButton');
 const debuffButton = document.querySelector('#debuffButton');
 const artifactButton = document.querySelector('#artifactButton');
+const dialogDialog = document.querySelector('#dialogDialog');
+const dialogTitle = document.querySelector('#dialogTitle');
+const dialogText = document.querySelector('#dialogText');
+const dialogChoices = document.querySelector('#dialogChoices');
+const campDialog = document.querySelector('#campDialog');
+const campInput = document.querySelector('#campInput');
+const campSendButton = document.querySelector('#campSendButton');
+const campAnswer = document.querySelector('#campAnswer');
 const endingDialog = document.querySelector('#endingDialog');
 const endingResult = document.querySelector('#endingResult');
 
 const tileSize = 64;
-const artifactGoal = 5;
+const artifactGoal = 10;
+const saveKey = 'deep-dream-protocol-save-v2';
 const directions = {
   ArrowUp: { x: 0, y: -1 }, KeyW: { x: 0, y: -1 },
   ArrowDown: { x: 0, y: 1 }, KeyS: { x: 0, y: 1 },
@@ -36,69 +57,70 @@ const directions = {
 };
 
 const archetypes = {
-  jabroni: { title: 'Джаброни', hp: 124, will: 84, coins: 8, attack: 28, skill: 'Кожаный суплекс', color: '#ffd166' },
-  shaman: { title: 'Нейро-шаман', hp: 96, will: 122, coins: 12, attack: 22, skill: 'import joy', color: '#77ffc0' },
-  crypto: { title: 'Крипто-омега', hp: 88, will: 92, coins: 42, attack: 19, skill: 'NFT-рывок', color: '#ff8fab' },
+  jabroni: { title: 'Джаброни', hp: 132, will: 88, coins: 8, attack: 30, skill: 'Кожаный суплекс', color: '#ffd166', passive: 'Суплексы дают +2 HP после победы.' },
+  shaman: { title: 'Нейро-шаман', hp: 98, will: 132, coins: 12, attack: 23, skill: 'import joy', color: '#77ffc0', passive: 'Python-магия медленнее растит S.O.S.I.' },
+  crypto: { title: 'Крипто-омега', hp: 88, will: 96, coins: 50, attack: 20, skill: 'NFT-рывок', color: '#ff8fab', passive: 'Больше мем-монет, но сильнее психоатаки.' },
 };
+
+const campaignActs = [
+  { act: 0, title: 'Пролог — Синий экран смерти', layer: 'Офис', quest: 'Найти код 0 6 0 0, флешку Глеба и пережить сегфолт-гиганта.' },
+  { act: 1, title: 'C++-ивация страны', layer: 'Кибер-город', quest: 'Взломать вышку S.O.S.I., помочь Python-кварталу и найти след FEDIL.' },
+  { act: 2, title: 'Битва при Оверфлоу', layer: 'Гачи-Верс', quest: 'Сделать выбор стороны: Python, C++ или танковое Задубение.' },
+  { act: 3, title: 'Код 0 6 0 0', layer: 'Санаторий / скрытый сервер', quest: 'Раскрыть, что S.O.S.I. управляет мемами и дофамином.' },
+  { act: 4, title: 'Спасти FEDIL', layer: 'Крипто-Стадион', quest: 'Сварить доширак озарения и победить Your Sweet Misery в диалоговой дуэли.' },
+  { act: 5, title: 'Центр Управления Реальностью', layer: 'Задубенный Ангар', quest: 'Собрать артефакты, остановить world_overhaul.sh и выбрать финал.' },
+];
 
 const layers = [
   {
-    name: 'Слой 1: Офис',
-    quest: 'Найти код 0 6 0 0 и флешку Глеба',
+    name: 'Слой 1: Офис', act: 0, quest: 'Найти код 0 6 0 0 и флешку Глеба',
     palette: { floor: '#183f2a', wall: '#263552', portal: '#2a2f63' },
-    map: [
-      '##########', '#..A..E..#', '#.##.###.#', '#....#...#', '#.R#.#M#.#',
-      '#..#...#.#', '#.###.#..#', '#E..A.#P.#', '#...#..C.#', '##########',
-    ],
+    map: ['##########', '#..A..E..#', '#.##.###.#', '#....#...#', '#.R#.#M#.#', '#..#...#.#', '#.###.#..#', '#E..A.#P.#', '#...#..C.#', '##########'],
   },
   {
-    name: 'Слой 2: Кибер-город',
-    quest: 'Взломать вышку S.O.S.I. и найти FEDIL',
+    name: 'Слой 2: Кибер-город', act: 1, quest: 'Взломать вышку S.O.S.I. и найти FEDIL',
     palette: { floor: '#12384b', wall: '#2f314f', portal: '#35245e' },
-    map: [
-      '##########', '#..E..A..#', '#.##.##..#', '#...M#...#', '#.A#.#R#.#',
-      '#..#...#.#', '#.##E.#..#', '#..C..#P.#', '#...#..A.#', '##########',
-    ],
+    map: ['##########', '#..E..A..#', '#.##.##..#', '#...M#...#', '#.A#.#R#.#', '#..#...#.#', '#.##E.#..#', '#..C..#P.#', '#...#..A.#', '##########'],
   },
   {
-    name: 'Слой 3: Гачи-Верс',
-    quest: 'Получить плащ непобедимости и пережить мем-инфекцию',
+    name: 'Слой 3: Гачи-Верс', act: 2, quest: 'Выбрать сторону и добыть кожаный плащ непобедимости',
     palette: { floor: '#3c2447', wall: '#4d2c3f', portal: '#1f4575' },
-    map: [
-      '##########', '#A..E...R#', '#.##.##..#', '#...#..A.#', '#.E#M#.#.#',
-      '#..#...#.#', '#.##..#..#', '#..A..#P.#', '#...#..C.#', '##########',
-    ],
+    map: ['##########', '#A..E...R#', '#.##.##..#', '#...#..A.#', '#.E#M#.#.#', '#..#...#.#', '#.##..#..#', '#..A..#P.#', '#...#..C.#', '##########'],
   },
   {
-    name: 'Слой 4: Крипто-Стадион',
-    quest: 'Сварить доширак озарения и освободить FEDIL',
+    name: 'Слой 4: Крипто-Стадион', act: 4, quest: 'Сварить доширак озарения и освободить FEDIL',
     palette: { floor: '#27334f', wall: '#52324c', portal: '#5f4b1e' },
-    map: [
-      '##########', '#..E..A..#', '#.##.##R.#', '#...M#...#', '#.A#.#E#.#',
-      '#..#...#.#', '#.##..#..#', '#..C..#P.#', '#...#..A.#', '##########',
-    ],
+    map: ['##########', '#..E..A..#', '#.##.##R.#', '#...M#...#', '#.A#.#E#.#', '#..#...#.#', '#.##..#..#', '#..C..#P.#', '#...#..A.#', '##########'],
   },
   {
-    name: 'Слой 5: Задубенный Ангар',
-    quest: 'Собрать танковые ключи и выбрать концовку',
+    name: 'Слой 5: Задубенный Ангар', act: 5, quest: 'Собрать танковые ключи, пережить world_overhaul.sh и выбрать концовку',
     palette: { floor: '#3a3829', wall: '#28364c', portal: '#683232' },
-    map: [
-      '##########', '#A.E..A..#', '#.##.##..#', '#...M#...#', '#.E#.#R#.#',
-      '#..#...#.#', '#.##..#..#', '#..A..#P.#', '#...#..C.#', '##########',
-    ],
+    map: ['##########', '#A.E..A..#', '#.##.##..#', '#...M#...#', '#.E#.#R#.#', '#..#...#.#', '#.##..#..#', '#..A..#P.#', '#...#..C.#', '##########'],
   },
 ];
 
-const enemies = {
-  E: ['Джаброни-пехота', 'S.O.S.I.-строка', 'Билли-рекурсия', 'Крипто-обезьяна'],
-  M: ['Сегфолт-гигант', 'Серж-компилятор', 'Джакиро-дракон', 'Your Sweet Misery', 'Глеб Танкист'],
+const endlessLayer = {
+  name: 'NG+: Бесконечная шиза', act: 6, quest: 'Процедурная охота за случайными боссами и мем-инфекциями',
+  palette: { floor: '#1f2148', wall: '#442b5f', portal: '#2a6b58' },
+  map: ['##########', '#A.E.RA..#', '#.##.##..#', '#..E#..C.#', '#.A#M#.#.#', '#..#...#.#', '#.##E.#..#', '#..A..#P.#', '#C..#..R.#', '##########'],
 };
 
-const resourceNames = {
-  C: 'Битые пиксели',
-  R: 'Бульон дебаггера',
-  A: 'Танковый ключ',
+const enemies = {
+  E: ['Джаброни-пехота', 'S.O.S.I.-строка', 'Билли-рекурсия', 'Баг-глитч', 'Крипто-обезьяна'],
+  M: ['Сегфолт-гигант', 'Серж-компилятор', 'Джакиро-дракон', 'Your Sweet Misery', 'Глеб Танкист', 'Случайный мем-архонт'],
 };
+
+const resourceNames = { C: 'Битые пиксели', R: 'Бульон дебаггера', A: 'Танковый ключ' };
+const branchTitles = { none: 'Не выбрана', python: 'Python свобода', cpp: 'C++ порядок', tank: 'Задубение' };
+const achievements = [
+  { id: 'first_blood', title: 'Первый глитч', description: 'Победить первого врага.' },
+  { id: 'fedil_free', title: 'Крылья PyTorch', description: 'Освободить FEDIL на Python-ветке.' },
+  { id: 'sosi_survivor', title: 'S.O.S.I.-выживший', description: 'Дожить до 80% S.O.S.I. и не проиграть.' },
+  { id: 'tank_keys', title: 'Суперглеб', description: 'Собрать 5 танковых ключей.' },
+  { id: 'ramen_master', title: 'Доширак озарения', description: 'Скрафтить 3 священных доширака.' },
+  { id: 'syntax_lord', title: 'Синтаксис судьбы', description: 'Выиграть 3 синтаксические дуэли.' },
+  { id: 'all_endings', title: 'Архитектор реальностей', description: 'Открыть любую концовку и New Game+.' },
+];
 
 let state;
 let activeEnemy = null;
@@ -111,21 +133,30 @@ function readPositions(map, symbol) {
   return positions;
 }
 
-function createInitialState() {
+function createInitialState(isNewGamePlus = false) {
   const archetype = archetypes[classSelect.value];
   const name = sanitizeHeroName(heroNameInput.value);
-
+  const layerIndex = isNewGamePlus ? layers.length : 0;
   return {
     name,
     archetypeKey: classSelect.value,
-    hero: { x: 1, y: 1, hp: archetype.hp, maxHp: archetype.hp, will: archetype.will, maxWill: archetype.will, xp: 0, coins: archetype.coins, sosi: 0 },
-    layerIndex: 0,
+    hero: { x: 1, y: 1, hp: archetype.hp, maxHp: archetype.hp, will: archetype.will, maxWill: archetype.will, xp: isNewGamePlus ? 120 : 0, coins: archetype.coins + (isNewGamePlus ? 80 : 0), sosi: isNewGamePlus ? 25 : 0 },
+    layerIndex,
+    branch: 'none',
     turn: 0,
+    kills: 0,
+    syntaxWins: 0,
+    ramenCrafted: 0,
+    endings: [],
+    newGamePlus: isNewGamePlus,
     finished: false,
     party: ['Ярик'],
-    inventory: { 'Битые пиксели': 0, 'Бульон дебаггера': 0, 'Специи Гачи': 0, 'Танковый ключ': 0, 'Священный доширак': 0 },
+    trust: { FEDIL: 0, 'Сергей Гермоненко': 0, 'Глеб Танкист': 0, Ярик: 2 },
+    madness: { FEDIL: 1, 'Сергей Гермоненко': 2, 'Глеб Танкист': 2, Ярик: 0 },
+    inventory: { 'Битые пиксели': 0, 'Бульон дебаггера': 0, 'Специи Гачи': 0, 'Танковый ключ': 0, 'Священный доширак': 0, 'Флешка с новеллой Глеба': 0, 'Кожаный плащ непобедимости': 0, 'Крылья PyTorch': 0 },
     artifacts: [],
-    entities: createLayerEntities(0),
+    achievements: [],
+    entities: createLayerEntities(layerIndex),
   };
 }
 
@@ -135,17 +166,23 @@ function sanitizeHeroName(value) {
   return normalized || 'Избранный';
 }
 
+function getLayer(index = state.layerIndex) {
+  return index >= layers.length ? endlessLayer : layers[index];
+}
+
 function createLayerEntities(layerIndex) {
-  const map = layers[layerIndex].map;
+  const layer = getLayer(layerIndex);
+  const map = layer.map;
   const enemiesOnLayer = [...readPositions(map, 'E'), ...readPositions(map, 'M')].map((position, index) => {
     const boss = map[position.y][position.x] === 'M';
+    const bossIndex = layerIndex >= layers.length ? enemies.M.length - 1 : layerIndex;
     return {
       ...position,
-      id: `${layerIndex}-${index}`,
+      id: `${layerIndex}-${index}-${Math.random().toString(36).slice(2)}`,
       boss,
-      name: boss ? enemies.M[layerIndex] : enemies.E[index % enemies.E.length],
-      hp: boss ? 72 + layerIndex * 18 : 42 + layerIndex * 10,
-      maxHp: boss ? 72 + layerIndex * 18 : 42 + layerIndex * 10,
+      name: boss ? enemies.M[bossIndex] : enemies.E[(index + layerIndex) % enemies.E.length],
+      hp: boss ? 82 + layerIndex * 22 : 46 + layerIndex * 12,
+      maxHp: boss ? 82 + layerIndex * 22 : 46 + layerIndex * 12,
     };
   });
 
@@ -156,11 +193,13 @@ function createLayerEntities(layerIndex) {
   };
 }
 
-function resetGame() {
-  state = createInitialState();
+function resetGame(isNewGamePlus = false, persist = true) {
+  state = createInitialState(isNewGamePlus);
   logList.innerHTML = '';
   addLog(`${state.name} входит в Deep Dream Protocol как ${archetypes[state.archetypeKey].title}.`);
-  setMessage('Найди ресурсы, победи глитчи, собирай артефакты слоёв и открывай разрывы кода.');
+  addLog(`Пассивка: ${archetypes[state.archetypeKey].passive}`);
+  setMessage('Цель: пройти акты, выбрать ветку, собрать 10 артефактов и решить судьбу цифровой реальности.');
+  if (persist) saveGame();
   updateHud();
   draw();
 }
@@ -171,38 +210,56 @@ function addLog(text) {
   const item = document.createElement('li');
   item.textContent = text;
   logList.append(item);
-  while (logList.children.length > 10) logList.firstElementChild.remove();
+  while (logList.children.length > 14) logList.firstElementChild.remove();
 }
 
 function updateHud() {
-  const layer = layers[state.layerIndex];
+  const layer = getLayer();
+  const act = campaignActs.find((item) => item.act === layer.act) || { title: 'NG+: Бесконечная шиза', quest: endlessLayer.quest };
   healthValue.textContent = `${Math.max(0, state.hero.hp)} / ${state.hero.maxHp}`;
   willValue.textContent = `${Math.max(0, state.hero.will)} / ${state.hero.maxWill}`;
   xpValue.textContent = state.hero.xp;
   coinValue.textContent = state.hero.coins;
   sosiValue.textContent = `${state.hero.sosi}%`;
+  actValue.textContent = `${layer.act} / 5`;
   artifactValue.textContent = `${state.artifacts.length} / ${artifactGoal}`;
+  branchValue.textContent = branchTitles[state.branch];
   layerName.textContent = layer.name;
   questName.textContent = `Квест: ${layer.quest}`;
-  partyList.innerHTML = state.party.map((member) => `<span class="pill">${member}</span>`).join('');
+  actCard.innerHTML = `<strong>${act.title}</strong><span>${act.quest}</span>`;
+  objectiveList.innerHTML = buildObjectives().map((objective) => `<div class="objective ${objective.done ? 'done' : ''}">${objective.done ? '✓' : '•'} ${objective.text}</div>`).join('');
+  partyList.innerHTML = state.party.map((member) => `<span class="pill">${member} · доверие ${state.trust[member] ?? 0}</span>`).join('');
   inventoryList.innerHTML = Object.entries(state.inventory)
     .filter(([, count]) => count > 0)
     .map(([name, count]) => `<span class="item-pill">${name}: ${count}</span>`)
     .join('') || '<span class="item-pill">Пусто</span>';
+  achievementList.innerHTML = achievements.map((achievement) => `<span class="achievement ${state.achievements.includes(achievement.id) ? 'done' : ''}" title="${achievement.description}">${achievement.title}</span>`).join('');
+  branchPanel.hidden = !(state.layerIndex === 2 && state.branch === 'none');
+  newGamePlusButton.hidden = !state.endings.length;
 }
 
-function currentMap() { return layers[state.layerIndex].map; }
+function buildObjectives() {
+  return [
+    { text: 'Победить босса слоя', done: !state.entities.enemies.some((enemy) => enemy.boss) },
+    { text: 'Собрать хотя бы один артефакт или ключ', done: state.artifacts.length > 0 || state.inventory['Танковый ключ'] > 0 },
+    { text: 'Выбрать ветку в Акте 2', done: state.layerIndex < 2 || state.branch !== 'none' },
+    { text: 'Сварить Священный доширак до Крипто-Стадиона', done: state.layerIndex < 3 || state.inventory['Священный доширак'] > 0 || state.ramenCrafted > 0 },
+    { text: `Подготовить ${artifactGoal} артефактов к финалу`, done: state.artifacts.length >= artifactGoal },
+  ];
+}
+
+function currentMap() { return getLayer().map; }
 function tileAt(x, y) { return currentMap()[y]?.[x] ?? '#'; }
 function samePosition(a, b) { return a.x === b.x && a.y === b.y; }
 
 function moveHero(direction) {
-  if (state.finished || battleDialog.open || endingDialog.open) return;
+  if (state.finished || battleDialog.open || endingDialog.open || dialogDialog.open || campDialog.open) return;
 
   const next = { x: state.hero.x + direction.x, y: state.hero.y + direction.y };
   if (tileAt(next.x, next.y) === '#') {
     state.turn += 1;
     state.hero.sosi = Math.min(100, state.hero.sosi + 2);
-    setMessage('Стена памяти не пускает дальше. Сосисочность слегка растёт.');
+    setMessage('Стена памяти не пускает дальше. S.O.S.I. слегка растёт.');
     updateHud();
     return;
   }
@@ -211,6 +268,7 @@ function moveHero(direction) {
   state.hero.y = next.y;
   state.turn += 1;
   resolveTileEvents();
+  checkAchievements();
   updateHud();
   draw();
 }
@@ -218,14 +276,7 @@ function moveHero(direction) {
 function resolveTileEvents() {
   const resourceIndex = state.entities.resources.findIndex((resource) => samePosition(resource, state.hero));
   if (resourceIndex !== -1) {
-    const [resource] = state.entities.resources.splice(resourceIndex, 1);
-    state.inventory[resource.name] += 1;
-    state.hero.xp += 8;
-    state.hero.coins += resource.symbol === 'A' ? 6 : 3;
-    if (resource.symbol === 'A') unlockArtifact(`Артефакт слоя ${state.layerIndex + 1}`);
-    if (resource.symbol === 'R') state.inventory['Специи Гачи'] += 1;
-    setMessage(`Получен ресурс: ${resource.name}. Его можно использовать для крафта и концовок.`);
-    addLog(`${state.name} подбирает ${resource.name}.`);
+    collectResource(resourceIndex);
     return;
   }
 
@@ -245,8 +296,21 @@ function resolveTileEvents() {
     return;
   }
 
-  if (state.turn % 7 === 0) triggerMemeInfection();
-  else setMessage('Слой шумит модемом 56k. Где-то рядом мерцает скрытая строка судьбы.');
+  if (state.turn % 11 === 0) syntaxChallenge();
+  else if (state.turn % 7 === 0) triggerMemeInfection();
+  else setMessage('Слой шумит модемом 56k. Скрытые строки судьбы ждут клика или диалога.');
+}
+
+function collectResource(resourceIndex) {
+  const [resource] = state.entities.resources.splice(resourceIndex, 1);
+  state.inventory[resource.name] += 1;
+  state.hero.xp += 8;
+  state.hero.coins += resource.symbol === 'A' ? 9 : 4;
+  if (resource.symbol === 'A') unlockArtifact(`Танковый ключ слоя ${state.layerIndex + 1}`);
+  if (resource.symbol === 'R') state.inventory['Специи Гачи'] += 1;
+  if (resource.symbol === 'C' && state.inventory['Флешка с новеллой Глеба'] === 0 && state.layerIndex === 0) state.inventory['Флешка с новеллой Глеба'] = 1;
+  setMessage(`Получен ресурс: ${resource.name}. Он влияет на крафт, финал и достижения.`);
+  addLog(`${state.name} подбирает ${resource.name}.`);
 }
 
 function unlockArtifact(name) {
@@ -256,7 +320,7 @@ function unlockArtifact(name) {
 function startBattle(enemy) {
   activeEnemy = enemy;
   battleTitle.textContent = enemy.boss ? `Босс: ${enemy.name}` : `Бой: ${enemy.name}`;
-  battleText.textContent = `${enemy.name} блокирует путь. HP врага: ${enemy.hp}/${enemy.maxHp}.`;
+  battleText.textContent = `${enemy.name} блокирует путь. HP врага: ${enemy.hp}/${enemy.maxHp}. Выбери действие.`;
   battleDialog.showModal();
 }
 
@@ -264,62 +328,88 @@ function performBattleAction(action) {
   if (!activeEnemy) return;
 
   const archetype = archetypes[state.archetypeKey];
-  let damage = archetype.attack + Math.floor(Math.random() * 9) + Math.floor(state.hero.xp / 40);
-  let response = 10 + state.layerIndex * 3 + Math.floor(Math.random() * 8);
+  const branchBonus = state.branch === 'python' ? 4 : state.branch === 'cpp' ? 8 : state.branch === 'tank' ? 6 : 0;
+  let damage = archetype.attack + branchBonus + Math.floor(Math.random() * 10) + Math.floor(state.hero.xp / 45);
+  let response = 11 + state.layerIndex * 3 + Math.floor(Math.random() * 8);
 
   if (action === 'debuff') {
-    damage = Math.floor(damage * 0.65);
-    response = Math.max(2, response - 9);
-    state.hero.will = Math.min(state.hero.maxWill, state.hero.will + 6);
+    damage = Math.floor(damage * 0.7);
+    response = Math.max(2, response - 10);
+    state.hero.will = Math.min(state.hero.maxWill, state.hero.will + 7);
   }
 
   if (action === 'artifact') {
     if (state.inventory['Священный доширак'] > 0) {
       state.inventory['Священный доширак'] -= 1;
-      damage += 34;
-      state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 24);
-      state.hero.will = Math.min(state.hero.maxWill, state.hero.will + 24);
+      damage += 38;
+      state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 28);
+      state.hero.will = Math.min(state.hero.maxWill, state.hero.will + 28);
     } else {
       damage = Math.floor(damage * 0.5);
-      response += 4;
+      response += 5;
     }
   }
 
   activeEnemy.hp -= damage;
-  state.hero.sosi = Math.min(100, state.hero.sosi + (state.archetypeKey === 'jabroni' ? 7 : 4));
+  const sosiGain = state.archetypeKey === 'shaman' ? 3 : state.archetypeKey === 'jabroni' ? 7 : 5;
+  state.hero.sosi = Math.min(100, state.hero.sosi + sosiGain);
 
   if (activeEnemy.hp <= 0) {
-    const reward = activeEnemy.boss ? 46 : 20;
-    state.hero.xp += reward;
-    state.hero.coins += activeEnemy.boss ? 24 : 9;
-    if (activeEnemy.boss) unlockArtifact(`Сигнатура босса ${state.layerIndex + 1}`);
-    state.entities.enemies = state.entities.enemies.filter((enemy) => enemy.id !== activeEnemy.id);
-    battleText.textContent = `${activeEnemy.name} рассыпается на глитчи. Получено ${reward} опыта.`;
-    addLog(`Победа над ${activeEnemy.name}.`);
-    activeEnemy = null;
-    closeBattleSoon();
+    winBattle(damage);
     return;
   }
 
-  state.hero.hp -= response;
-  state.hero.will -= activeEnemy.boss ? 8 : 3;
-  battleText.textContent = `${archetype.skill}: -${damage} HP врагу. Ответный глитч: -${response} HP. У врага осталось ${activeEnemy.hp}.`;
+  const willHit = activeEnemy.boss ? 9 : 3;
+  state.hero.hp -= state.archetypeKey === 'crypto' ? response + 3 : response;
+  state.hero.will -= willHit;
+  battleText.textContent = `${archetype.skill}: -${damage} HP врагу. Ответный глитч: -${response} HP и -${willHit} воли. У врага осталось ${activeEnemy.hp}.`;
 
-  if (state.hero.hp <= 0 || state.hero.will <= 0 || state.hero.sosi >= 100) {
-    state.finished = true;
-    battleText.textContent = 'Протокол захватил управление. Нажми «Новая симуляция», чтобы восстановить ветку судьбы.';
-    addLog('Симуляция завершилась аварийным протоколом.');
-    activeEnemy = null;
-    closeBattleSoon();
-  }
-
+  if (state.hero.hp <= 0 || state.hero.will <= 0 || state.hero.sosi >= 100) failRun();
   updateHud();
   draw();
+}
+
+function winBattle(damage) {
+  const reward = activeEnemy.boss ? 56 : 22;
+  const defeatedName = activeEnemy.name;
+  state.kills += 1;
+  state.hero.xp += reward;
+  state.hero.coins += activeEnemy.boss ? 28 : 10;
+  if (state.archetypeKey === 'jabroni') state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 2);
+  if (activeEnemy.boss) {
+    unlockArtifact(`Сигнатура босса ${state.layerIndex + 1}`);
+    applyBossReward();
+  }
+  state.entities.enemies = state.entities.enemies.filter((enemy) => enemy.id !== activeEnemy.id);
+  battleText.textContent = `${defeatedName} рассыпается на глитчи после ${damage} урона. Получено ${reward} опыта.`;
+  addLog(`Победа над ${defeatedName}.`);
+  activeEnemy = null;
+  checkAchievements();
+  closeBattleSoon();
+}
+
+function applyBossReward() {
+  if (state.layerIndex === 2) state.inventory['Кожаный плащ непобедимости'] = 1;
+  if (state.layerIndex === 3) {
+    state.inventory['Крылья PyTorch'] = 1;
+    if (!state.party.includes('FEDIL')) state.party.push('FEDIL');
+    state.trust.FEDIL += 3;
+    unlockAchievement('fedil_free');
+  }
+}
+
+function failRun() {
+  state.finished = true;
+  battleText.textContent = 'Протокол захватил управление. Нажми «Новая симуляция», чтобы восстановить ветку судьбы.';
+  addLog('Симуляция завершилась аварийным протоколом.');
+  activeEnemy = null;
+  closeBattleSoon();
 }
 
 function closeBattleSoon() {
   setTimeout(() => {
     if (battleDialog.open) battleDialog.close();
+    saveGame();
     updateHud();
     draw();
   }, 900);
@@ -332,13 +422,15 @@ function ramenSaveRitual() {
     state.hero.hp = state.hero.maxHp;
     state.hero.will = state.hero.maxWill;
     state.inventory['Священный доширак'] += 1;
-    setMessage('Идеальный доширак! HP и воля восстановлены, сохранение записано в ноосферу.');
+    state.ramenCrafted += 1;
+    setMessage('Идеальный доширак! HP и воля восстановлены, прогресс записан в localStorage.');
     addLog('Ритуал сохранения прошёл идеально.');
   } else {
     state.hero.will = Math.max(1, state.hero.will - 8);
-    setMessage(`Доширак вышел спорным. Правильное время было ${perfect}. Но прогресс всё равно запомнен.`);
+    setMessage(`Доширак вышел спорным. Правильное время было ${perfect}. Сейв всё равно обновлён.`);
     addLog('Ритуал сохранения дал странный привкус.');
   }
+  saveGame();
 }
 
 function usePortal() {
@@ -348,9 +440,15 @@ function usePortal() {
     return;
   }
 
-  if (state.layerIndex === layers.length - 1) {
-    if (state.artifacts.length >= artifactGoal) showEndingDialog();
-    else setMessage('Финальная консоль требует 5 артефактов слоёв. Ищи танковые ключи и сигнатуры боссов.');
+  if (state.layerIndex === 2 && state.branch === 'none') {
+    branchPanel.hidden = false;
+    setMessage('Акт 2 требует выбора стороны перед переходом дальше.');
+    return;
+  }
+
+  if (state.layerIndex >= layers.length - 1) {
+    if (state.artifacts.length >= artifactGoal || state.newGamePlus) showEndingDialog();
+    else setMessage(`Финальная консоль требует ${artifactGoal} артефактов. Сейчас: ${state.artifacts.length}.`);
     return;
   }
 
@@ -360,14 +458,30 @@ function usePortal() {
   state.entities = createLayerEntities(state.layerIndex);
   state.hero.sosi = Math.max(0, state.hero.sosi - 12);
   recruitByLayer();
-  setMessage(`Переход выполнен: ${layers[state.layerIndex].name}. Реальность подгружает новые правила.`);
-  addLog(`Открыт ${layers[state.layerIndex].name}.`);
+  setMessage(`Переход выполнен: ${getLayer().name}. Реальность подгружает новые правила.`);
+  addLog(`Открыт ${getLayer().name}.`);
+  saveGame();
 }
 
 function recruitByLayer() {
   const recruits = ['FEDIL', 'Сергей Гермоненко', 'Глеб Танкист'];
   const recruit = recruits[state.layerIndex - 1];
-  if (recruit && state.party.length < 3 && !state.party.includes(recruit)) state.party.push(recruit);
+  if (recruit && state.party.length < 4 && !state.party.includes(recruit)) state.party.push(recruit);
+}
+
+function chooseBranch(branch) {
+  state.branch = branch;
+  const branchEffects = {
+    python: () => { state.hero.will += 20; state.trust.FEDIL += 3; if (!state.party.includes('FEDIL')) state.party.push('FEDIL'); return 'FEDIL сбрасывает цепи if scared. Открыта магия нейросетей.'; },
+    cpp: () => { state.hero.maxHp += 20; state.hero.hp += 20; state.trust['Сергей Гермоненко'] += 3; if (!state.party.includes('Сергей Гермоненко')) state.party.push('Сергей Гермоненко'); return 'Гермоненко выделяет память под порядок. C++-атаки усилены.'; },
+    tank: () => { state.hero.coins += 35; state.trust['Глеб Танкист'] += 3; if (!state.party.includes('Глеб Танкист')) state.party.push('Глеб Танкист'); return 'Глеб выдаёт чертёж ангара. Танковые ключи ценятся выше.'; },
+  };
+  const text = branchEffects[branch]();
+  branchPanel.hidden = true;
+  setMessage(text);
+  addLog(`Выбрана ветка: ${branchTitles[branch]}. ${text}`);
+  saveGame();
+  updateHud();
 }
 
 function craftRamen() {
@@ -376,11 +490,38 @@ function craftRamen() {
     state.inventory['Специи Гачи'] -= 1;
     state.hero.coins -= 10;
     state.inventory['Священный доширак'] += 1;
-    setMessage('Священный доширак готов: в бою он лечит и усиливает код-атаку.');
+    state.ramenCrafted += 1;
+    setMessage('Священный доширак готов: в бою лечит, усиливает код-атаку и нужен для дуэли с меланхолией.');
     addLog('Скрафчен Священный доширак озарения.');
   } else {
     setMessage('Нужны Бульон дебаггера, Специи Гачи и 10 мем-монет.');
   }
+  checkAchievements();
+  saveGame();
+  updateHud();
+}
+
+function syntaxChallenge() {
+  const challenges = [
+    { q: 'Введи Python-команду свободы:', a: 'print("Свобода")' },
+    { q: 'Введи команду слияния:', a: 'merge --squash' },
+    { q: 'Введи код FEDIL:', a: '0 6 0 0' },
+  ];
+  const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+  const answer = window.prompt(challenge.q, challenge.a);
+  if (answer === challenge.a) {
+    state.syntaxWins += 1;
+    state.hero.will = Math.min(state.hero.maxWill, state.hero.will + 14);
+    state.hero.xp += 12;
+    setMessage('Синтаксическая дуэль выиграна: воля и опыт выросли.');
+    addLog('Игрок исправил синтаксическую ошибку судьбы.');
+  } else {
+    state.hero.sosi = Math.min(100, state.hero.sosi + 12);
+    setMessage('Синтаксическая ошибка усилила S.O.S.I. и исказила интерфейс.');
+    addLog('Провалена синтаксическая дуэль.');
+  }
+  checkAchievements();
+  saveGame();
   updateHud();
 }
 
@@ -389,10 +530,73 @@ function triggerMemeInfection() {
     () => { state.hero.coins += 12; return 'Мем-инфекция «Суперглеб»: найдено 12 мем-монет, но интерфейс дрожит.'; },
     () => { state.hero.will = Math.min(state.hero.maxWill, state.hero.will + 10); return 'Мем-инфекция «Это сон, бро»: воля к коду восстановлена.'; },
     () => { state.hero.sosi = Math.min(100, state.hero.sosi + 9); return 'Скрытая S.O.S.I.-строка ускорила тревожный счётчик.'; },
+    () => { state.inventory['Битые пиксели'] += 1; return 'Мем-инфекция «Ass We Can»: враги спорят сами с собой, найден битый пиксель.'; },
   ];
   const text = events[Math.floor(Math.random() * events.length)]();
   setMessage(text);
   addLog(text);
+}
+
+function openDialogue() {
+  const layer = getLayer();
+  const speaker = state.branch === 'cpp' ? 'Сергей Гермоненко' : state.branch === 'tank' ? 'Глеб Танкист' : 'FEDIL';
+  dialogTitle.textContent = `${speaker}: паттерн шизы`;
+  dialogText.textContent = `${speaker} обсуждает акт «${layer.quest}». Доверие открывает баффы, безумие — риск S.O.S.I.`;
+  dialogChoices.innerHTML = '';
+  [
+    { text: 'Попросить совет', trust: 1, madness: 0, result: 'NPC даёт подсказку к текущему порталу.' },
+    { text: 'Спорить о протоколе', trust: 0, madness: 1, result: 'Спор добавляет опыта, но повышает безумие.' },
+    { text: 'Показать цитатник FEDIL', trust: 2, madness: -1, result: 'Цитаты стабилизируют диалоговую ветку.' },
+  ].forEach((choice) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = choice.text;
+    button.addEventListener('click', () => {
+      state.trust[speaker] = (state.trust[speaker] ?? 0) + choice.trust;
+      state.madness[speaker] = Math.max(0, (state.madness[speaker] ?? 0) + choice.madness);
+      state.hero.xp += choice.trust + 3;
+      dialogText.textContent = choice.result;
+      addLog(`${speaker}: ${choice.result}`);
+      saveGame();
+      updateHud();
+    });
+    dialogChoices.append(button);
+  });
+  dialogDialog.showModal();
+}
+
+function openCamp() {
+  campAnswer.textContent = 'Ярик уже кипятит чайник и сортирует эмоциональный мусор.';
+  campDialog.showModal();
+}
+
+function sendCampMessage() {
+  const text = campInput.value.trim() || 'молчание';
+  const answers = [
+    `Ярик прочитал «${text}» и выдал аптечку из сарказма.`,
+    `Лагерь решил, что «${text}» — это побочный квест. Воля восстановлена.`,
+    `NPC завис на 2 секунды, потом сказал: «${text}? звучит как план».`,
+  ];
+  const answer = answers[Math.floor(Math.random() * answers.length)];
+  campAnswer.textContent = answer;
+  state.hero.will = Math.min(state.hero.maxWill, state.hero.will + 8);
+  state.hero.coins += 2;
+  addLog(answer);
+  campInput.value = '';
+  saveGame();
+  updateHud();
+}
+
+function pingFate() {
+  if (Math.random() > 0.45) {
+    state.hero.xp += 10;
+    state.hero.sosi = Math.max(0, state.hero.sosi - 5);
+    setMessage('Пинг-тревога дала бафф: +10 опыта и -5% S.O.S.I.');
+  } else {
+    state.hero.sosi = Math.min(100, state.hero.sosi + 7);
+    setMessage('Гермоненко действительно корректировал судьбу: +7% S.O.S.I.');
+  }
+  updateHud();
 }
 
 function showEndingDialog() {
@@ -401,22 +605,78 @@ function showEndingDialog() {
 }
 
 function chooseEnding(type) {
+  const requirements = {
+    python: state.branch === 'python' || state.party.includes('FEDIL'),
+    cpp: state.branch === 'cpp' || state.party.includes('Сергей Гермоненко'),
+    tank: state.branch === 'tank' || state.inventory['Танковый ключ'] >= 5,
+    merge: state.artifacts.length >= artifactGoal && state.trust.FEDIL >= 3 && state.trust['Сергей Гермоненко'] >= 3,
+  };
+  if (!requirements[type] && !state.newGamePlus) {
+    endingResult.textContent = 'Финал пока закрыт: не хватает ветки, доверия или артефактов.';
+    return;
+  }
   const endings = {
     python: 'Концовка Python: FEDIL запускает print("Свобода"), и ноосфера становится открытой школой нейросетей.',
-    cpp: 'Концовка C++: реальность компилируется в reality.exe. Багов меньше, правил больше.',
-    tank: 'Великое Задубение: карта превращается в бесконечный ангарный симулятор с танками.',
-    merge: 'Секретное слияние: merge --squash объединяет протоколы в добрый цифровой рай из мемов и чистого кода.',
+    cpp: 'Концовка C++: реальность компилируется в reality.exe. Багов меньше, правил больше, память под счастье выделена.',
+    tank: 'Великое Задубение: мир превращается в бесконечную карту ангаров, а RPG становится танковым симулятором.',
+    merge: 'Секретное слияние: merge --squash объединяет протоколы в цифровой рай из мемов, доверия и чистого кода.',
   };
   endingResult.textContent = endings[type];
   state.finished = true;
+  if (!state.endings.includes(type)) state.endings.push(type);
+  unlockAchievement('all_endings');
   addLog(endings[type]);
-  setMessage(endings[type]);
+  setMessage(`${endings[type]} Открыт New Game+.`);
+  saveGame();
   updateHud();
+}
+
+function unlockAchievement(id) {
+  if (!state.achievements.includes(id)) state.achievements.push(id);
+}
+
+function checkAchievements() {
+  if (state.kills >= 1) unlockAchievement('first_blood');
+  if (state.hero.sosi >= 80 && !state.finished) unlockAchievement('sosi_survivor');
+  if (state.inventory['Танковый ключ'] >= 5) unlockAchievement('tank_keys');
+  if (state.ramenCrafted >= 3) unlockAchievement('ramen_master');
+  if (state.syntaxWins >= 3) unlockAchievement('syntax_lord');
+}
+
+function saveGame() {
+  localStorage.setItem(saveKey, JSON.stringify(state));
+}
+
+function loadGame() {
+  const raw = localStorage.getItem(saveKey);
+  if (!raw) {
+    setMessage('Доширак-сейв не найден. Начни новую симуляцию.');
+    return;
+  }
+  state = normalizeLoadedState(JSON.parse(raw));
+  activeEnemy = null;
+  setMessage('Доширак-сейв загружен из localStorage.');
+  addLog('Загружено сохранение через ритуал доширака.');
+  updateHud();
+  draw();
+}
+
+function normalizeLoadedState(loadedState) {
+  const fallback = createInitialState(false);
+  return {
+    ...fallback,
+    ...loadedState,
+    hero: { ...fallback.hero, ...loadedState.hero },
+    trust: { ...fallback.trust, ...loadedState.trust },
+    madness: { ...fallback.madness, ...loadedState.madness },
+    inventory: { ...fallback.inventory, ...loadedState.inventory },
+    entities: loadedState.entities || createLayerEntities(loadedState.layerIndex || 0),
+  };
 }
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const layer = layers[state.layerIndex];
+  const layer = getLayer();
   currentMap().forEach((row, y) => [...row].forEach((cell, x) => drawTile(x, y, cell, layer.palette)));
   state.entities.resources.forEach((resource) => drawEmoji(resource.x, resource.y, resource.symbol === 'A' ? '🔑' : resource.symbol === 'R' ? '🍜' : '💾'));
   state.entities.enemies.forEach((enemy) => drawEmoji(enemy.x, enemy.y, enemy.boss ? '👾' : '⚠️'));
@@ -449,7 +709,7 @@ function drawHero() {
   ctx.beginPath();
   ctx.arc(px + 32, py + 25, 15, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#4dabf7';
+  ctx.fillStyle = state.branch === 'cpp' ? '#7c92a8' : state.branch === 'tank' ? '#7b8f37' : '#4dabf7';
   ctx.fillRect(px + 18, py + 40, 28, 16);
   ctx.fillStyle = '#06101d';
   ctx.fillRect(px + 25, py + 22, 4, 4);
@@ -467,6 +727,9 @@ document.addEventListener('keydown', (event) => {
   if (event.code === 'Digit1') performBattleAction('attack');
   if (event.code === 'Digit2') performBattleAction('debuff');
   if (event.code === 'Digit3') performBattleAction('artifact');
+  if (event.code === 'KeyT') openDialogue();
+  if (event.code === 'KeyY') syntaxChallenge();
+  if (event.code === 'KeyC') openCamp();
   const direction = directions[event.code];
   if (!direction) return;
   event.preventDefault();
@@ -479,12 +742,20 @@ document.querySelectorAll('[data-move]').forEach((button) => {
   button.addEventListener('click', () => moveHero(direction));
 });
 
+document.querySelectorAll('[data-branch]').forEach((button) => button.addEventListener('click', () => chooseBranch(button.dataset.branch)));
 attackButton.addEventListener('click', () => performBattleAction('attack'));
 debuffButton.addEventListener('click', () => performBattleAction('debuff'));
 artifactButton.addEventListener('click', () => performBattleAction('artifact'));
 craftButton.addEventListener('click', craftRamen);
-startButton.addEventListener('click', resetGame);
-newGameButton.addEventListener('click', resetGame);
+startButton.addEventListener('click', () => resetGame(false, true));
+newGameButton.addEventListener('click', () => resetGame(false, true));
+newGamePlusButton.addEventListener('click', () => resetGame(true, true));
+loadButton.addEventListener('click', loadGame);
+talkButton.addEventListener('click', openDialogue);
+syntaxButton.addEventListener('click', syntaxChallenge);
+campButton.addEventListener('click', openCamp);
+campSendButton.addEventListener('click', sendCampMessage);
+pingButton.addEventListener('click', pingFate);
 document.querySelectorAll('[data-ending]').forEach((button) => button.addEventListener('click', () => chooseEnding(button.dataset.ending)));
 
-resetGame();
+resetGame(false, false);

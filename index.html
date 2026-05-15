@@ -3,22 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Deep Dream Protocol — 2D RPG</title>
+    <title>Deep Dream Protocol — Слои Судьбы</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="game-shell">
       <section class="hero-panel" aria-labelledby="game-title">
         <div>
-          <p class="eyebrow">Glitch pixel RPG / демо-пролог</p>
+          <p class="eyebrow">Glitch pixel RPG / расширенный сюжетный прототип</p>
           <h1 id="game-title">Deep Dream Protocol</h1>
           <p class="intro">
-            Цифровая ноосфера распалась на слои: Офис, Кибер-город, Гачи-Верс,
-            Крипто-Стадион и Задубенный Ангар. Выбери архетип, собери артефакты,
-            освободи FEDIL и реши, на каком коде будет перезапущена реальность.
+            Большой каркас 2D RPG по промту: пять слоёв реальности, актовая структура,
+            союзники, ветки FEDIL / Гермоненко / Глеб, крафт доширака, мем-инфекции,
+            синтаксические дуэли, New Game+ и четыре финала.
           </p>
         </div>
-        <button id="newGameButton" type="button">Новая симуляция</button>
+        <div class="hero-actions">
+          <button id="newGameButton" type="button">Новая симуляция</button>
+          <button id="loadButton" type="button" class="ghost-button">Загрузить доширак-сейв</button>
+        </div>
       </section>
 
       <section class="setup-panel" aria-label="Создание персонажа">
@@ -29,16 +32,16 @@
         <label>
           Архетип
           <select id="classSelect">
-            <option value="jabroni">Джаброни — ближний бой</option>
-            <option value="shaman" selected>Нейро-шаман — Python-магия</option>
-            <option value="crypto">Крипто-омега — доход и риск</option>
+            <option value="jabroni">Джаброни — ближний бой и стойкость</option>
+            <option value="shaman" selected>Нейро-шаман — Python-магия и воля</option>
+            <option value="crypto">Крипто-омега — мем-монеты и риск</option>
           </select>
         </label>
         <button id="startButton" type="button">Скомпилировать героя</button>
       </section>
 
       <section class="ticker" aria-label="Новостная лента">
-        <div id="newsTicker">Курс биткоина спорит с прогнозом FEDIL • Глеб строит новый ангар • Очередь за дошираком выросла до 300 человек</div>
+        <div id="newsTicker">Курс биткоина упал после лекции FEDIL • Гермоненко компилирует тревогу • Глеб построил 5 ангаров за ночь • Очередь за дошираком выросла до 300 человек</div>
       </section>
 
       <section class="hud" aria-label="Показатели героя">
@@ -46,8 +49,10 @@
         <div class="stat-card"><span>Воля к коду</span><strong id="willValue">100</strong></div>
         <div class="stat-card"><span>Опыт</span><strong id="xpValue">0</strong></div>
         <div class="stat-card"><span>Мем-монеты</span><strong id="coinValue">0</strong></div>
-        <div class="stat-card"><span>Сосисочность</span><strong id="sosiValue">0%</strong></div>
-        <div class="stat-card"><span>Артефакты</span><strong id="artifactValue">0 / 5</strong></div>
+        <div class="stat-card"><span>S.O.S.I.</span><strong id="sosiValue">0%</strong></div>
+        <div class="stat-card"><span>Акт</span><strong id="actValue">0 / 5</strong></div>
+        <div class="stat-card"><span>Артефакты</span><strong id="artifactValue">0 / 10</strong></div>
+        <div class="stat-card"><span>Ветка</span><strong id="branchValue">Не выбрана</strong></div>
       </section>
 
       <section class="game-layout">
@@ -58,6 +63,26 @@
           </div>
           <canvas id="gameCanvas" width="640" height="640" aria-label="Игровая карта" role="img"></canvas>
           <div id="message" class="message" aria-live="polite"></div>
+
+          <div id="branchPanel" class="branch-panel" hidden>
+            <h2>Акт 2: выбери сторону</h2>
+            <p>Выбор меняет пассивки, диалоги, доступных союзников и финальные условия.</p>
+            <div class="choice-grid">
+              <button data-branch="python" type="button">Освободить FEDIL</button>
+              <button data-branch="cpp" type="button">Союз с Гермоненко</button>
+              <button data-branch="tank" type="button">Пойти к Глебу</button>
+            </div>
+          </div>
+
+          <div class="quick-actions" aria-label="Действия">
+            <button id="talkButton" type="button">Диалог / цитатник</button>
+            <button id="syntaxButton" type="button">Синтаксическая дуэль</button>
+            <button id="campButton" type="button">Лагерь Ярика</button>
+            <button id="newGamePlusButton" type="button" hidden>Бесконечная шиза NG+</button>
+          </div>
+
+          <button id="pingButton" type="button" class="ping-button">Гермоненко корректирует судьбу...</button>
+
           <div class="mobile-controls" aria-label="Экранное управление">
             <button data-move="up" type="button">▲</button>
             <button data-move="left" type="button">◀</button>
@@ -70,10 +95,14 @@
           <h2>Команды</h2>
           <ul>
             <li><kbd>WASD</kbd> / <kbd>стрелки</kbd> — движение по слою.</li>
-            <li><kbd>1</kbd> Код-атака, <kbd>2</kbd> дебафф, <kbd>3</kbd> артефакт в бою.</li>
-            <li>🌀 Разрыв кода переносит в следующий слой после выполнения квеста.</li>
-            <li>🍜 У костра запускается сохранение через мини-игру с дошираком.</li>
+            <li><kbd>1</kbd> код-атака, <kbd>2</kbd> дебафф, <kbd>3</kbd> артефакт в бою.</li>
+            <li><kbd>T</kbd> диалог, <kbd>Y</kbd> синтаксис, <kbd>C</kbd> лагерь.</li>
+            <li>🌀 Разрыв кода переносит в следующий слой после босса и целей акта.</li>
           </ul>
+
+          <h2>Акт и цели</h2>
+          <div id="actCard" class="act-card"></div>
+          <div id="objectiveList" class="objective-list"></div>
 
           <h2>Отряд</h2>
           <div id="partyList" class="pill-list"></div>
@@ -81,6 +110,9 @@
           <h2>Инвентарь и крафт</h2>
           <div id="inventoryList" class="inventory-list"></div>
           <button id="craftButton" type="button" class="wide-button">Сварить Священный доширак</button>
+
+          <h2>Достижения</h2>
+          <div id="achievementList" class="achievement-list"></div>
 
           <h2>Журнал</h2>
           <ol id="logList" class="log-list"></ol>
@@ -100,10 +132,30 @@
       </form>
     </dialog>
 
+    <dialog id="dialogDialog" class="dialog-dialog">
+      <form method="dialog">
+        <h2 id="dialogTitle">Диалог</h2>
+        <p id="dialogText"></p>
+        <div id="dialogChoices" class="choice-grid"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="campDialog" class="camp-dialog">
+      <form method="dialog">
+        <h2>Лагерь Ярика</h2>
+        <p>Напиши NPC любое сообщение: лагерь ответит генеративной шуткой, восстановит часть воли и обновит слухи.</p>
+        <input id="campInput" maxlength="80" placeholder="Напиши в лагерь..." />
+        <button id="campSendButton" type="button">Отправить</button>
+        <p id="campAnswer" class="camp-answer"></p>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
     <dialog id="endingDialog" class="ending-dialog">
       <form method="dialog">
         <h2>Финальный выбор</h2>
-        <p>Центр Управления Реальностью ждёт команду. Какой протокол запустить?</p>
+        <p>Центр Управления Реальностью ждёт команду. Доступность финалов зависит от ветки, союзников и артефактов.</p>
         <div class="ending-grid">
           <button data-ending="python" type="button">print("Свобода")</button>
           <button data-ending="cpp" type="button">compile reality.exe</button>
