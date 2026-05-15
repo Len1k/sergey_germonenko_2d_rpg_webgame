@@ -1,4 +1,7 @@
 const canvas = document.querySelector('#gameCanvas');
+const gameMenu = document.querySelector('#gameMenu');
+const menuMount = document.querySelector('#menuMount');
+const openMenuButton = document.querySelector('#openMenuButton');
 const ctx = canvas.getContext('2d');
 const heroNameInput = document.querySelector('#heroNameInput');
 const classSelect = document.querySelector('#classSelect');
@@ -102,6 +105,38 @@ const {
 
 let state;
 let activeEnemy = null;
+
+
+function setupFullscreenMenu() {
+  const menuNodes = [
+    document.querySelector('.hero-panel'),
+    document.querySelector('.setup-panel'),
+    document.querySelector('.ticker'),
+    document.querySelector('.hud'),
+    document.querySelector('.quick-actions'),
+    document.querySelector('.side-panel'),
+  ].filter(Boolean);
+
+  menuNodes.forEach((node) => {
+    node.classList.add('menu-section');
+    menuMount.append(node);
+  });
+}
+
+function toggleGameMenu(forceOpen = null) {
+  const shouldOpen = forceOpen ?? !gameMenu.open;
+  if (shouldOpen) {
+    gameMenu.showModal();
+  } else {
+    gameMenu.close();
+  }
+}
+
+function resizeFullscreenCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  if (state) draw();
+}
 
 function readPositions(map, symbol) {
   const positions = [];
@@ -318,7 +353,7 @@ function tileAt(x, y) { return currentMap()[y]?.[x] ?? '#'; }
 function samePosition(a, b) { return a.x === b.x && a.y === b.y; }
 
 function moveHero(direction) {
-  if (state.finished || battleDialog.open || endingDialog.open || dialogDialog.open || campDialog.open) return;
+  if (state.finished || gameMenu.open || battleDialog.open || endingDialog.open || dialogDialog.open || campDialog.open || questDialog.open || atlasDialog.open || skillDialog.open || raidDialog.open || codexDialog.open || devDialog.open) return;
 
   const next = { x: state.hero.x + direction.x, y: state.hero.y + direction.y };
   if (tileAt(next.x, next.y) === '#') {
@@ -1038,42 +1073,48 @@ function draw() {
 }
 
 function drawTile(x, y, cell, palette) {
-  const px = x * tileSize;
-  const py = y * tileSize;
+  const tileWidth = canvas.width / currentMap()[0].length;
+  const tileHeight = canvas.height / currentMap().length;
+  const px = x * tileWidth;
+  const py = y * tileHeight;
   const isWall = cell === '#';
   const isPortal = cell === 'P';
   ctx.fillStyle = isWall ? palette.wall : isPortal ? palette.portal : palette.floor;
-  ctx.fillRect(px, py, tileSize, tileSize);
+  ctx.fillRect(px, py, tileWidth, tileHeight);
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.065)';
-  ctx.strokeRect(px, py, tileSize, tileSize);
+  ctx.strokeRect(px, py, tileWidth, tileHeight);
   if (!isWall) {
     ctx.fillStyle = 'rgba(119, 255, 192, 0.12)';
-    ctx.fillRect(px + 12, py + 12, 8, 8);
-    ctx.fillRect(px + 42, py + 36, 6, 6);
+    ctx.fillRect(px + tileWidth * 0.18, py + tileHeight * 0.18, tileWidth * 0.12, tileHeight * 0.12);
+    ctx.fillRect(px + tileWidth * 0.66, py + tileHeight * 0.56, tileWidth * 0.1, tileHeight * 0.1);
   }
 }
 
 function drawHero() {
   const { x, y } = state.hero;
   const archetype = archetypes[state.archetypeKey];
-  const px = x * tileSize;
-  const py = y * tileSize;
+  const tileWidth = canvas.width / currentMap()[0].length;
+  const tileHeight = canvas.height / currentMap().length;
+  const px = x * tileWidth;
+  const py = y * tileHeight;
   ctx.fillStyle = archetype.color;
   ctx.beginPath();
-  ctx.arc(px + 32, py + 25, 15, 0, Math.PI * 2);
+  ctx.arc(px + tileWidth * 0.5, py + tileHeight * 0.39, Math.min(tileWidth, tileHeight) * 0.23, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = state.branch === 'cpp' ? '#7c92a8' : state.branch === 'tank' ? '#7b8f37' : '#4dabf7';
-  ctx.fillRect(px + 18, py + 40, 28, 16);
+  ctx.fillRect(px + tileWidth * 0.28, py + tileHeight * 0.62, tileWidth * 0.44, tileHeight * 0.25);
   ctx.fillStyle = '#06101d';
-  ctx.fillRect(px + 25, py + 22, 4, 4);
-  ctx.fillRect(px + 36, py + 22, 4, 4);
+  ctx.fillRect(px + tileWidth * 0.39, py + tileHeight * 0.34, tileWidth * 0.06, tileHeight * 0.06);
+  ctx.fillRect(px + tileWidth * 0.56, py + tileHeight * 0.34, tileWidth * 0.06, tileHeight * 0.06);
 }
 
 function drawEmoji(x, y, emoji) {
-  ctx.font = '34px serif';
+  const tileWidth = canvas.width / currentMap()[0].length;
+  const tileHeight = canvas.height / currentMap().length;
+  ctx.font = `${Math.max(22, Math.min(tileWidth, tileHeight) * 0.52)}px serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(emoji, x * tileSize + tileSize / 2, y * tileSize + tileSize / 2);
+  ctx.fillText(emoji, x * tileWidth + tileWidth / 2, y * tileHeight + tileHeight / 2);
 }
 
 document.addEventListener('keydown', (event) => {
@@ -1090,6 +1131,15 @@ document.addEventListener('keydown', (event) => {
   if (event.code === 'KeyB') openCodex();
   if (event.code === 'KeyM') toggleSoundtrack();
   if (event.code === 'Backquote') openDevPanel();
+  if (event.code === 'Escape') {
+    event.preventDefault();
+    if (gameMenu.open) {
+      toggleGameMenu(false);
+    } else if (![battleDialog, dialogDialog, atlasDialog, skillDialog, raidDialog, questDialog, codexDialog, campDialog, devDialog, endingDialog].some((dialog) => dialog.open)) {
+      toggleGameMenu(true);
+    }
+    return;
+  }
   const direction = directions[event.code];
   if (!direction) return;
   event.preventDefault();
@@ -1121,6 +1171,8 @@ raidButton.addEventListener('click', openRaidBoard);
 codexButton.addEventListener('click', openCodex);
 soundButton.addEventListener('click', toggleSoundtrack);
 devButton.addEventListener('click', openDevPanel);
+openMenuButton.addEventListener('click', () => toggleGameMenu(true));
+window.addEventListener('resize', resizeFullscreenCanvas);
 devTeleportButton.addEventListener('click', devTeleportToLayer);
 devGrantButton.addEventListener('click', devGrantSelection);
 devCompleteLayerButton.addEventListener('click', devCompleteLayerGoals);
@@ -1132,4 +1184,6 @@ pingButton.addEventListener('click', pingFate);
 document.querySelectorAll('[data-ending]').forEach((button) => button.addEventListener('click', () => chooseEnding(button.dataset.ending)));
 
 validateContentData();
+setupFullscreenMenu();
+resizeFullscreenCanvas();
 resetGame(false, false);

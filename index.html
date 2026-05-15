@@ -8,6 +8,7 @@
   </head>
   <body>
     <main class="game-shell">
+      <button id="openMenuButton" type="button" class="open-menu-button">☰ Меню / Esc</button>
       <section class="hero-panel" aria-labelledby="game-title">
         <div>
           <p class="eyebrow">Glitch pixel RPG / расширенный сюжетный прототип</p>
@@ -137,6 +138,20 @@
         </aside>
       </section>
     </main>
+
+    <dialog id="gameMenu" class="game-menu" aria-labelledby="game-menu-title">
+      <form method="dialog" class="game-menu-frame">
+        <div class="game-menu-header">
+          <div>
+            <p class="eyebrow">Пауза / системное меню</p>
+            <h2 id="game-menu-title">Deep Dream Protocol</h2>
+          </div>
+          <button value="close" class="ghost-button">Вернуться в игру</button>
+        </div>
+        <p class="menu-hint">Canvas остаётся на весь экран под меню. Здесь собраны персонаж, инвентарь, квесты, настройки и инструменты контент-дизайнера.</p>
+        <div id="menuMount" class="menu-grid"></div>
+      </form>
+    </dialog>
 
     <dialog id="battleDialog" class="battle-dialog">
       <form method="dialog">

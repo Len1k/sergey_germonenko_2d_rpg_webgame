@@ -614,3 +614,239 @@ dialog::backdrop { background: rgba(1, 4, 10, 0.72); }
 @media (max-width: 680px) {
   .dev-grid { grid-template-columns: 1fr; }
 }
+
+/* Fullscreen gameplay shell: the map always occupies the entire browser window. */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.game-shell {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.game-layout,
+.board-wrap {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #050814;
+  box-shadow: none;
+}
+
+#gameCanvas,
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  border-radius: 0;
+  object-fit: fill;
+}
+
+.open-menu-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 11px 16px;
+  color: var(--text);
+  background: rgba(7, 12, 25, 0.78);
+  font-weight: 900;
+  backdrop-filter: blur(14px);
+}
+
+.layer-strip {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  right: 180px;
+  z-index: 12;
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.layer-strip span,
+#questName {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: var(--accent);
+  background: rgba(7, 12, 25, 0.72);
+  backdrop-filter: blur(14px);
+}
+
+#questName {
+  color: var(--warning);
+}
+
+.message {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 14;
+  width: min(760px, calc(100vw - 32px));
+  min-height: auto;
+  transform: translateX(-50%);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+}
+
+.branch-panel {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 16;
+  width: min(620px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  backdrop-filter: blur(18px);
+}
+
+.ping-button {
+  position: fixed;
+  left: 16px;
+  bottom: 18px;
+  z-index: 15;
+  width: auto;
+  max-width: min(420px, calc(100vw - 32px));
+  margin: 0;
+  background: rgba(7, 12, 25, 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.mobile-controls {
+  position: fixed;
+  right: 16px;
+  bottom: 18px;
+  z-index: 15;
+  margin: 0;
+}
+
+.game-menu {
+  width: min(1180px, calc(100vw - 28px));
+  max-height: min(880px, calc(100vh - 28px));
+  padding: 0;
+  overflow: hidden;
+  border-radius: 28px;
+}
+
+.game-menu::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+.game-menu-frame {
+  max-height: calc(100vh - 28px);
+  padding: 22px;
+  overflow: auto;
+}
+
+.game-menu-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.game-menu-header h2 {
+  margin-bottom: 0;
+  font-size: clamp(1.8rem, 5vw, 3.8rem);
+}
+
+.menu-hint {
+  color: var(--muted);
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.25fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.menu-section {
+  position: static;
+  width: auto;
+  margin: 0;
+}
+
+.game-menu .hero-panel,
+.game-menu .setup-panel,
+.game-menu .ticker,
+.game-menu .hud,
+.game-menu .side-panel,
+.game-menu .quick-actions {
+  display: grid;
+  border-radius: 22px;
+}
+
+.game-menu .hero-panel {
+  grid-column: 1 / -1;
+}
+
+.game-menu .ticker,
+.game-menu .hud,
+.game-menu .quick-actions {
+  grid-column: 1 / -1;
+}
+
+.game-menu .side-panel {
+  grid-column: 1 / -1;
+}
+
+.game-menu .hud {
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+}
+
+.game-menu .quick-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 760px) {
+  .layer-strip {
+    right: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .open-menu-button {
+    top: auto;
+    right: 16px;
+    bottom: 92px;
+  }
+
+  .ping-button {
+    display: none;
+  }
+
+  .menu-grid,
+  .game-menu .hud,
+  .game-menu .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .game-menu-header {
+    display: grid;
+  }
+}
