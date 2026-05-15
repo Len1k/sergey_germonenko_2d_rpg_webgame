@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deep Dream Protocol — Слои Судьбы</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <button id="openMenuButton" type="button" class="open-menu-button">☰ Меню / Esc</button>
+      <section class="hero-panel" aria-labelledby="game-title">
+        <div>
+          <p class="eyebrow">Glitch pixel RPG / расширенный сюжетный прототип</p>
+          <h1 id="game-title">Deep Dream Protocol</h1>
+          <p class="intro">
+            Большой каркас 2D RPG по промту: пять слоёв реальности, актовая структура,
+            союзники, ветки FEDIL / Гермоненко / Глеб, крафт доширака, мем-инфекции,
+            синтаксические дуэли, New Game+ и четыре финала.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="newGameButton" type="button">Новая симуляция</button>
+          <button id="loadButton" type="button" class="ghost-button">Загрузить доширак-сейв</button>
+        </div>
+      </section>
+
+      <section class="setup-panel" aria-label="Создание персонажа">
+        <label>
+          Имя в консоли
+          <input id="heroNameInput" maxlength="18" value="Избранный" autocomplete="off" />
+        </label>
+        <label>
+          Архетип
+          <select id="classSelect">
+            <option value="jabroni">Джаброни — ближний бой и стойкость</option>
+            <option value="shaman" selected>Нейро-шаман — Python-магия и воля</option>
+            <option value="crypto">Крипто-омега — мем-монеты и риск</option>
+          </select>
+        </label>
+        <button id="startButton" type="button">Скомпилировать героя</button>
+      </section>
+
+      <section class="ticker" aria-label="Новостная лента">
+        <div id="newsTicker">Курс биткоина упал после лекции FEDIL • Гермоненко компилирует тревогу • Глеб построил 5 ангаров за ночь • Очередь за дошираком выросла до 300 человек</div>
+      </section>
+
+      <section class="hud" aria-label="Показатели героя">
+        <div class="stat-card"><span>HP</span><strong id="healthValue">100</strong></div>
+        <div class="stat-card"><span>Воля к коду</span><strong id="willValue">100</strong></div>
+        <div class="stat-card"><span>Опыт</span><strong id="xpValue">0</strong></div>
+        <div class="stat-card"><span>Мем-монеты</span><strong id="coinValue">0</strong></div>
+        <div class="stat-card"><span>S.O.S.I.</span><strong id="sosiValue">0%</strong></div>
+        <div class="stat-card"><span>Акт</span><strong id="actValue">0 / 5</strong></div>
+        <div class="stat-card"><span>Артефакты</span><strong id="artifactValue">0 / 10</strong></div>
+        <div class="stat-card"><span>Ветка</span><strong id="branchValue">Не выбрана</strong></div>
+      </section>
+
+      <section class="game-layout">
+        <div class="board-wrap">
+          <div class="layer-strip">
+            <span id="layerName">Офис</span>
+            <span id="questName">Квест: найти код 0 6 0 0</span>
+          </div>
+          <canvas id="gameCanvas" width="640" height="640" aria-label="Игровая карта" role="img"></canvas>
+          <div id="message" class="message" aria-live="polite"></div>
+
+          <div id="branchPanel" class="branch-panel" hidden>
+            <h2>Акт 2: выбери сторону</h2>
+            <p>Выбор меняет пассивки, диалоги, доступных союзников и финальные условия.</p>
+            <div class="choice-grid">
+              <button data-branch="python" type="button">Освободить FEDIL</button>
+              <button data-branch="cpp" type="button">Союз с Гермоненко</button>
+              <button data-branch="tank" type="button">Пойти к Глебу</button>
+            </div>
+          </div>
+
+          <div class="quick-actions" aria-label="Действия">
+            <button id="talkButton" type="button">Диалог / цитатник</button>
+            <button id="syntaxButton" type="button">Синтаксическая дуэль</button>
+            <button id="campButton" type="button">Лагерь Ярика</button>
+            <button id="questBoardButton" type="button">Доска сайд-квестов</button>
+            <button id="atlasButton" type="button">Атлас слоёв</button>
+            <button id="skillButton" type="button">Дерево навыков</button>
+            <button id="raidButton" type="button">Рейдовые операции</button>
+            <button id="codexButton" type="button">Кодекс мира</button>
+            <button id="soundButton" type="button">Саундтрек: выкл</button>
+            <button id="devButton" type="button">Dev-панель</button>
+            <button id="newGamePlusButton" type="button" hidden>Бесконечная шиза NG+</button>
+          </div>
+
+          <button id="pingButton" type="button" class="ping-button">Гермоненко корректирует судьбу...</button>
+
+          <div class="mobile-controls" aria-label="Экранное управление">
+            <button data-move="up" type="button">▲</button>
+            <button data-move="left" type="button">◀</button>
+            <button data-move="down" type="button">▼</button>
+            <button data-move="right" type="button">▶</button>
+          </div>
+        </div>
+
+        <aside class="side-panel">
+          <h2>Команды</h2>
+          <ul>
+            <li><kbd>WASD</kbd> / <kbd>стрелки</kbd> — движение по слою.</li>
+            <li><kbd>1</kbd> код-атака, <kbd>2</kbd> дебафф, <kbd>3</kbd> артефакт в бою.</li>
+            <li><kbd>T</kbd> диалог, <kbd>Y</kbd> синтаксис, <kbd>C</kbd> лагерь.</li>
+            <li><kbd>Q</kbd> сайд-квесты, <kbd>O</kbd> атлас, <kbd>K</kbd> навыки, <kbd>L</kbd> рейды.</li>
+            <li><kbd>B</kbd> кодекс, <kbd>M</kbd> саундтрек, <kbd>`</kbd> Dev-панель.</li>
+            <li>🌀 Разрыв кода переносит в следующий слой после босса и целей акта.</li>
+          </ul>
+
+          <h2>Акт и цели</h2>
+          <div id="actCard" class="act-card"></div>
+          <div id="objectiveList" class="objective-list"></div>
+
+          <h2>Сайд-квесты слоя</h2>
+          <div id="sideQuestList" class="side-quest-list"></div>
+
+          <h2>Репутация фракций</h2>
+          <div id="factionList" class="faction-list"></div>
+
+          <h2>Навыки</h2>
+          <div id="skillList" class="skill-list"></div>
+
+          <h2>Отряд</h2>
+          <div id="partyList" class="pill-list"></div>
+
+          <h2>Инвентарь и крафт</h2>
+          <div id="inventoryList" class="inventory-list"></div>
+          <button id="craftButton" type="button" class="wide-button">Сварить Священный доширак</button>
+
+          <h2>Достижения</h2>
+          <div id="achievementList" class="achievement-list"></div>
+
+          <h2>Журнал</h2>
+          <ol id="logList" class="log-list"></ol>
+        </aside>
+      </section>
+    </main>
+
+    <dialog id="gameMenu" class="game-menu" aria-labelledby="game-menu-title">
+      <form method="dialog" class="game-menu-frame">
+        <div class="game-menu-header">
+          <div>
+            <p class="eyebrow">Пауза / системное меню</p>
+            <h2 id="game-menu-title">Deep Dream Protocol</h2>
+          </div>
+          <button value="close" class="ghost-button">Вернуться в игру</button>
+        </div>
+        <p class="menu-hint">Canvas остаётся на весь экран под меню. Здесь собраны персонаж, инвентарь, квесты, настройки и инструменты контент-дизайнера.</p>
+        <div id="menuMount" class="menu-grid"></div>
+      </form>
+    </dialog>
+
+    <dialog id="battleDialog" class="battle-dialog">
+      <form method="dialog">
+        <h2 id="battleTitle">Бой</h2>
+        <p id="battleText"></p>
+        <div class="battle-actions">
+          <button id="attackButton" value="attack" type="button">1 — Код-атака</button>
+          <button id="debuffButton" value="debuff" type="button">2 — try/except</button>
+          <button id="artifactButton" value="artifact" type="button">3 — Артефакт</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="dialogDialog" class="dialog-dialog">
+      <form method="dialog">
+        <h2 id="dialogTitle">Диалог</h2>
+        <p id="dialogText"></p>
+        <div id="dialogChoices" class="choice-grid"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="questDialog" class="quest-dialog">
+      <form method="dialog">
+        <h2>Доска сайд-квестов</h2>
+        <p>Сайд-квесты дают ресурсы для длинной кампании: ключи, опыт, доверие и редкие артефакты.</p>
+        <div id="questDialogList" class="quest-dialog-list"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="atlasDialog" class="atlas-dialog">
+      <form method="dialog">
+        <h2>Атлас слоёв</h2>
+        <p>Большая кампания разбита на районы, рейдовые зоны и сюжетные узлы. Атлас показывает масштаб мира.</p>
+        <div id="atlasList" class="atlas-list"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="skillDialog" class="skill-dialog">
+      <form method="dialog">
+        <h2>Дерево навыков</h2>
+        <p id="skillPointText"></p>
+        <div id="skillDialogList" class="skill-dialog-list"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="raidDialog" class="raid-dialog">
+      <form method="dialog">
+        <h2>Рейдовые операции</h2>
+        <p>Рейды — заготовки для крупных сайд-цепочек: риск, награды, репутация и редкий лут.</p>
+        <div id="raidDialogList" class="raid-dialog-list"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="codexDialog" class="codex-dialog">
+      <form method="dialog">
+        <h2>Кодекс Deep Dream</h2>
+        <div id="codexList" class="codex-list"></div>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="campDialog" class="camp-dialog">
+      <form method="dialog">
+        <h2>Лагерь Ярика</h2>
+        <p>Напиши NPC любое сообщение: лагерь ответит генеративной шуткой, восстановит часть воли и обновит слухи.</p>
+        <input id="campInput" maxlength="80" placeholder="Напиши в лагерь..." />
+        <button id="campSendButton" type="button">Отправить</button>
+        <p id="campAnswer" class="camp-answer"></p>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="devDialog" class="dev-dialog">
+      <form method="dialog">
+        <h2>Dev-панель контент-дизайнера</h2>
+        <p>Инструменты для быстрого тестирования слоёв, квестов, экономики и сохранений.</p>
+        <div class="dev-grid">
+          <label>
+            Телепорт на слой
+            <select id="devLayerSelect"></select>
+          </label>
+          <button id="devTeleportButton" type="button">Телепорт</button>
+          <label>
+            Выдать ресурс/стат
+            <select id="devGrantSelect"></select>
+          </label>
+          <label>
+            Количество
+            <input id="devGrantAmount" type="number" min="1" value="1" />
+          </label>
+          <button id="devGrantButton" type="button">Выдать</button>
+          <button id="devCompleteLayerButton" type="button">Закрыть цели слоя</button>
+          <button id="devExportButton" type="button">Экспорт сейва</button>
+          <button id="devImportButton" type="button">Импорт сейва</button>
+          <button id="devResetSaveButton" type="button" class="danger-button">Сбросить сейв</button>
+        </div>
+        <textarea id="devSaveText" rows="7" placeholder="Здесь появится JSON сейва для экспорта/импорта"></textarea>
+        <p id="devStatus" class="dev-status"></p>
+        <button value="close" class="ghost-button">Закрыть</button>
+      </form>
+    </dialog>
+
+    <dialog id="endingDialog" class="ending-dialog">
+      <form method="dialog">
+        <h2>Финальный выбор</h2>
+        <p>Центр Управления Реальностью ждёт команду. Доступность финалов зависит от ветки, союзников и артефактов.</p>
+        <div class="ending-grid">
+          <button data-ending="python" type="button">print("Свобода")</button>
+          <button data-ending="cpp" type="button">compile reality.exe</button>
+          <button data-ending="tank" type="button">world_overhaul.sh</button>
+          <button data-ending="merge" type="button">merge --squash</button>
+        </div>
+        <p id="endingResult" class="ending-result"></p>
+      </form>
+    </dialog>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
